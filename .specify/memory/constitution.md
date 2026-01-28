@@ -1,55 +1,44 @@
-# [PROJECT_NAME] Constitution
-<!-- Example: Spec Constitution, TaskFlow Constitution, etc. -->
+
+<!-- Sync Impact Report
+Version: 1.0.0
+List of modified principles:
+Added sections:
+Removed sections:
+Templates requiring updates:
+- ✅ .specify/templates/plan-template.md
+- ✅ .specify/templates/spec-template.md
+- ✅ .specify/templates/tasks-template.md
+- ✅ .specify/templates/commands/sp.constitution.md
+Follow-up TODOs:
+- TODO(RATIFICATION_DATE): Original ratification date is unknown.
+-->
+
+# Hackathon II – Evolution of Todo – Phase II Full-Stack Web App Constitution
 
 ## Core Principles
 
-### [PRINCIPLE_1_NAME]
-<!-- Example: I. Library-First -->
-[PRINCIPLE_1_DESCRIPTION]
-<!-- Example: Every feature starts as a standalone library; Libraries must be self-contained, independently testable, documented; Clear purpose required - no organizational-only libraries -->
+### Strict Spec-Driven Development
+Every feature implementation must start from a written specification; Specifications must be clear, testable, and cover all acceptance criteria; Manual coding without a spec is prohibited.
 
-### [PRINCIPLE_2_NAME]
-<!-- Example: II. CLI Interface -->
-[PRINCIPLE_2_DESCRIPTION]
-<!-- Example: Every library exposes functionality via CLI; Text in/out protocol: stdin/args → stdout, errors → stderr; Support JSON + human-readable formats -->
+### Monorepo Architecture
+The project will use a monorepo structure with frontend (Next.js 14 App Router) and backend (Python FastAPI) components.
 
-### [PRINCIPLE_3_NAME]
-<!-- Example: III. Test-First (NON-NEGOTIABLE) -->
-[PRINCIPLE_3_DESCRIPTION]
-<!-- Example: TDD mandatory: Tests written → User approved → Tests fail → Then implement; Red-Green-Refactor cycle strictly enforced -->
+### Secure JWT Authentication
+All API interactions will be secured using JWT authentication. Backend FastAPI will verify JWTs, and frontend will manage token storage and transmission. Better Auth will be used for token issuance.
 
-### [PRINCIPLE_4_NAME]
-<!-- Example: IV. Integration Testing -->
-[PRINCIPLE_4_DESCRIPTION]
-<!-- Example: Focus areas requiring integration tests: New library contract tests, Contract changes, Inter-service communication, Shared schemas -->
+### Strict User Data Isolation
+Each user's data must be strictly isolated. All database queries and API responses must be filtered by the authenticated user's ID.
 
-### [PRINCIPLE_5_NAME]
-<!-- Example: V. Observability, VI. Versioning & Breaking Changes, VII. Simplicity -->
-[PRINCIPLE_5_DESCRIPTION]
-<!-- Example: Text I/O ensures debuggability; Structured logging required; Or: MAJOR.MINOR.BUILD format; Or: Start simple, YAGNI principles -->
+### Clean, Testable, Type-Safe Code
+Code must be clean, maintainable, and type-safe. Use SQLModel for backend ORM, and TypeScript for frontend. All code should be easily testable.
 
-### [PRINCIPLE_6_NAME]
+## Key Standards
+All API endpoints must require a valid JWT. Every task and data record must be filtered by the authenticated `user_id`. Use SQLModel with Neon PostgreSQL for the database. The frontend will use Next.js App Router with Server Components as the default. Tailwind CSS will be used for all styling.
 
+## Constraints
+No new technologies outside the specified stack. The application must support multiple users from day one. CORS must be properly configured for inter-service communication.
 
-[PRINCIPLE__DESCRIPTION]
+## Development Workflow
+Amendments to this constitution require a documented proposal, a review of impact on dependent artifacts, and approval by the project lead. Versioning follows Semantic Versioning rules (MAJOR.MINOR.PATCH). Compliance will be reviewed during integration testing phases.
 
-## [SECTION_2_NAME]
-<!-- Example: Additional Constraints, Security Requirements, Performance Standards, etc. -->
-
-[SECTION_2_CONTENT]
-<!-- Example: Technology stack requirements, compliance standards, deployment policies, etc. -->
-
-## [SECTION_3_NAME]
-<!-- Example: Development Workflow, Review Process, Quality Gates, etc. -->
-
-[SECTION_3_CONTENT]
-<!-- Example: Code review requirements, testing gates, deployment approval process, etc. -->
-
-## Governance
-<!-- Example: Constitution supersedes all other practices; Amendments require documentation, approval, migration plan -->
-
-[GOVERNANCE_RULES]
-<!-- Example: All PRs/reviews must verify compliance; Complexity must be justified; Use [GUIDANCE_FILE] for runtime development guidance -->
-
-**Version**: [CONSTITUTION_VERSION] | **Ratified**: [RATIFICATION_DATE] | **Last Amended**: [LAST_AMENDED_DATE]
-<!-- Example: Version: 2.1.1 | Ratified: 2025-06-13 | Last Amended: 2025-07-16 -->
+**Version**: 1.0.0 | **Ratified**: TODO(RATIFICATION_DATE): Original ratification date is unknown. | **Last Amended**: 2026-01-28
