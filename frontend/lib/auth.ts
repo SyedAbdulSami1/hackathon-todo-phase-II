@@ -1,4 +1,5 @@
-import { apiClient } from './api'
+import axios from 'axios'
+import { api } from './api'
 
 export interface User {
   id: string
@@ -20,12 +21,12 @@ export interface RegisterRequest {
 
 export const authClient = {
   login: async (data: LoginRequest): Promise<{ user: User; token: string }> => {
-    const response = await apiClient.post('/api/auth/login', data)
+    const response = await axios.post(`${api.defaults.baseURL}/api/auth/login`, data)
     return response.data
   },
 
   register: async (data: RegisterRequest): Promise<{ user: User; token: string }> => {
-    const response = await apiClient.post('/api/auth/register', data)
+    const response = await axios.post(`${api.defaults.baseURL}/api/auth/register`, data)
     return response.data
   },
 
@@ -39,7 +40,7 @@ export const authClient = {
     if (!token) return null
 
     try {
-      const response = await apiClient.get('/api/auth/me')
+      const response = await api.get('/api/auth/me')
       return response.data
     } catch {
       return null
