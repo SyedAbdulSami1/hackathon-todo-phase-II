@@ -1,15 +1,11 @@
 from datetime import datetime
 from typing import Optional
-from sqlmodel import SQLModel, Field, create_engine
+from sqlmodel import SQLModel, Field
 from pydantic import BaseModel, EmailStr
-
-# Database connection
-DATABASE_URL = "postgresql://neondb_owner:your_password@ep-misty-brook-12345.us-east-2.aws.neon.tech/neondb?sslmode=require"
-engine = create_engine(DATABASE_URL)
 
 # Base model for database tables
 class BaseSQLModel(SQLModel):
-    id: Optional[int] = Field(default=None, primary_key=True)
+    id: Optional[int] = Field(default=None, primary_key=True, sa_column_kwargs={"autoincrement": True})
     created_at: datetime = Field(default_factory=datetime.utcnow)
     updated_at: datetime = Field(default_factory=datetime.utcnow)
 
@@ -52,9 +48,9 @@ class TaskCreate(BaseModel):
     status: str = "pending"
 
 class TaskUpdate(BaseModel):
-    title: Optional[str] = None
-    description: Optional[str] = None
-    status: Optional[str] = None
+    title: Optional[str] = Field(None, min_length=1, max_length=200)
+    description: Optional[str] = Field(None, max_length=1000)
+    status: Optional[str] = Field(None, regex="^(pending|in_progress|completed)$")
 
 class TaskResponse(BaseModel):
     id: int

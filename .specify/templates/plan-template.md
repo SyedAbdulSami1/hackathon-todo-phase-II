@@ -31,7 +31,12 @@
 
 *GATE: Must pass before Phase 0 research. Re-check after Phase 1 design.*
 
-[Gates determined based on constitution file]
+- ✅ Spec-driven development: Feature specification exists and is detailed
+- ✅ Agentic execution: Plan will be executed by Claude Code
+- ✅ Determinism: Requirements are clear and testable
+- ✅ Security-first: Authentication and isolation requirements defined
+- ✅ Production realism: Real database and authentication specified
+- ✅ Traceability: Features map to requirements in spec
 
 ## Project Structure
 

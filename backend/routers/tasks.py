@@ -3,8 +3,9 @@ from sqlmodel import Session, select
 from typing import List, Optional
 from ..models import (
     Task, TaskCreate, TaskUpdate, TaskResponse,
-    User, get_current_active_user
+    User
 )
+from ..dependencies.auth import get_current_active_user
 from ..db import get_session
 
 router = APIRouter()
@@ -88,6 +89,10 @@ def update_task(
     update_data = task_update.dict(exclude_unset=True)
     for field, value in update_data.items():
         setattr(task, field, value)
+
+    # Update timestamp
+    from datetime import datetime
+    task.updated_at = datetime.utcnow()
 
     session.add(task)
     session.commit()
