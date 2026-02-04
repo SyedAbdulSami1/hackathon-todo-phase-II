@@ -43,9 +43,9 @@ class UserResponse(BaseModel):
         from_attributes = True
 
 class TaskCreate(BaseModel):
-    title: str
-    description: Optional[str] = None
-    status: str = "pending"
+    title: str = Field(..., min_length=1, max_length=200)
+    description: Optional[str] = Field(None, max_length=1000)
+    status: str = Field("pending", regex="^(pending|in_progress|completed)$")
 
 class TaskUpdate(BaseModel):
     title: Optional[str] = Field(None, min_length=1, max_length=200)
@@ -71,3 +71,20 @@ class UserLogin(BaseModel):
 class Token(BaseModel):
     access_token: str
     token_type: str
+
+class TaskDeleteResponse(BaseModel):
+    message: str
+    deleted_task_id: int
+    deleted_at: datetime
+
+class TaskStatusResponse(BaseModel):
+    message: str
+    task_id: int
+    old_status: str
+    new_status: str
+    updated_at: datetime
+
+class TaskCreateResponse(BaseModel):
+    message: str
+    task: TaskResponse
+    created_at: datetime

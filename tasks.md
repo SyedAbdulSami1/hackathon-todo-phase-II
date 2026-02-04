@@ -4,7 +4,7 @@
 
 ### Create Task
 
-- [ ] [T1] [P1] [ST1] Implement task creation API endpoint in FastAPI. (@backend/CLAUDE.md, @specs/features/task-crud.md)
+- [X] [T1] [P1] [ST1] Implement task creation API endpoint in FastAPI. (@backend/CLAUDE.md, @specs/features/task-crud.md)
 - [ ] [T2] [P1] [ST1] Implement task creation form in Next.js. (@frontend/CLAUDE.md, @specs/features/task-crud.md)
 
 ### View Tasks
@@ -19,12 +19,12 @@
 
 ### Delete Task
 
-- [ ] [T7] [P1] [ST4] Implement API endpoint to delete a task. (@backend/CLAUDE.md, @specs/features/task-crud.md)
+- [X] [T7] [P1] [ST4] Implement API endpoint to delete a task. (@backend/CLAUDE.md, @specs/features/task-crud.md)
 - [ ] [T8] [P1] [ST4] Implement task deletion functionality in Next.js. (@frontend/CLAUDE.md, @specs/features/task-crud.md)
 
 ### Mark Task Complete
 
-- [ ] [T9] [P1] [ST5] Implement API endpoint to mark a task as complete. (@backend/CLAUDE.md, @specs/features/task-crud.md)
+- [X] [T9] [P1] [ST5] Implement API endpoint to mark a task as complete. (@backend/CLAUDE.md, @specs/features/task-crud.md)
 - [ ] [T10] [P1] [ST5] Implement task completion toggle in Next.js. (@frontend/CLAUDE.md, @specs/features/task-crud.md)
 
 ## Foundational Tasks
