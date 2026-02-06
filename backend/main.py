@@ -8,9 +8,9 @@ from db import engine
 from middleware.error_handler import validation_exception_handler, http_exception_handler, general_exception_handler
 
 # Create database tables
-from models import Base
+from models import BaseSQLModel
 from db import engine
-Base.metadata.create_all(bind=engine)
+BaseSQLModel.metadata.create_all(bind=engine)
 
 app = FastAPI(
     title="Todo API",

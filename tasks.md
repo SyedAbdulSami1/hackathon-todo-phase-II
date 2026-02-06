@@ -40,3 +40,6 @@
 - [X] [TP3] [P2] Refine UI/UX for task management. (@frontend/CLAUDE.md, @specs/ui/components.md)
 - [X] [TP4] [P2] Write unit tests for backend API endpoints. (@backend/tests/, @backend/CLAUDE.md)
 - [X] [TP5] [P2] Write integration tests for frontend components. (@frontend/tests/, @frontend/CLAUDE.md)
+- [X] [TP6] [P2] Fix type mismatches between backend and frontend status fields. (@frontend/types/, @frontend/components/)
+- [X] [TP7] [P2] Add In-Progress filter option to frontend. (@frontend/components/task-list.tsx)
+- [X] [TP8] [P2] Configure environment variables for both frontend and backend. (@frontend/.env.local, @backend/.env)

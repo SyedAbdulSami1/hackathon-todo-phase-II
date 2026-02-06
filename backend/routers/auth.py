@@ -2,9 +2,9 @@ from datetime import timedelta
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlmodel import Session
-from ..models import User, UserCreate, UserResponse, UserLogin, Token
-from ..db import get_session
-from ..dependencies.auth import (
+from models import User, UserCreate, UserResponse, UserLogin, Token
+from db import get_session
+from dependencies.auth import (
     authenticate_user,
     create_access_token,
     get_current_user,

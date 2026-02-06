@@ -2,12 +2,12 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlmodel import Session, select
 from typing import List, Optional
 from sqlalchemy.exc import IntegrityError
-from ..models import (
+from models import (
     Task, TaskCreate, TaskUpdate, TaskResponse, TaskDeleteResponse, TaskStatusResponse, TaskCreateResponse,
     User
 )
-from ..dependencies.auth import get_current_active_user
-from ..db import get_session
+from dependencies.auth import get_current_active_user
+from db import get_session
 
 router = APIRouter()
 

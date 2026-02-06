@@ -206,7 +206,7 @@ export function TaskList() {
       </Card>
 
       {/* Filter Controls */}
-      <div className="flex gap-2">
+      <div className="flex gap-2 flex-wrap">
         <Button
           variant={filterStatus === 'all' ? 'default' : 'outline'}
           onClick={() => setFilterStatus('all')}
@@ -220,6 +220,13 @@ export function TaskList() {
           size="sm"
         >
           Pending
+        </Button>
+        <Button
+          variant={filterStatus === 'in_progress' ? 'default' : 'outline'}
+          onClick={() => setFilterStatus('in_progress')}
+          size="sm"
+        >
+          In Progress
         </Button>
         <Button
           variant={filterStatus === 'completed' ? 'default' : 'outline'}
