@@ -20,7 +20,7 @@ export interface Task {
   id: number
   title: string
   description?: string
-  completed: boolean
+  status: 'pending' | 'in_progress' | 'completed'
   created_at: string
   updated_at: string
   user_id: string
@@ -30,9 +30,9 @@ export interface Task {
 // Request Types (using Pick/Omit for DRY)
 // ============================================
 
-export type CreateTaskRequest = Pick<Task, 'title' | 'description'>
+export type CreateTaskRequest = Pick<Task, 'title' | 'description' | 'status'>
 
-export type UpdateTaskRequest = Partial<CreateTaskRequest & Pick<Task, 'completed'>>
+export type UpdateTaskRequest = Partial<CreateTaskRequest>
 
 export interface LoginRequest {
   email: string
@@ -72,7 +72,7 @@ export interface AuthResponse {
 // Utility Types
 // ============================================
 
-export type TaskStatus = 'all' | 'pending' | 'completed'
+export type TaskStatus = 'all' | 'pending' | 'in_progress' | 'completed'
 export type TaskSort = 'created' | 'title' | 'due_date'
 
 // Discriminated union for task filter state

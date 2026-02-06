@@ -76,7 +76,7 @@ export function TaskList() {
       const task = tasks.find(t => t.id === taskId)
       if (task) {
         await apiClient.updateTask(taskId, {
-          completed: !task.completed,
+          status: task.status === 'completed' ? 'pending' : 'completed',
         })
         setError(null)
         fetchTasks()
@@ -245,7 +245,7 @@ export function TaskList() {
                 <div className="flex items-start justify-between">
                   <div className="flex items-start space-x-3 flex-1">
                     <Checkbox
-                      checked={task.completed}
+                      checked={task.status === 'completed'}
                       onCheckedChange={() => toggleTaskCompletion(task.id)}
                     />
                     <div className="flex-1">
@@ -270,11 +270,11 @@ export function TaskList() {
                         </div>
                       ) : (
                         <>
-                          <h3 className={`font-medium ${task.completed ? 'line-through text-muted-foreground' : ''}`}>
+                          <h3 className={`font-medium ${task.status === 'completed' ? 'line-through text-muted-foreground' : ''}`}>
                             {task.title}
                           </h3>
                           {task.description && (
-                            <p className={`text-sm text-muted-foreground mt-1 ${task.completed ? 'line-through' : ''}`}>
+                            <p className={`text-sm text-muted-foreground mt-1 ${task.status === 'completed' ? 'line-through' : ''}`}>
                               {task.description}
                             </p>
                           )}
@@ -310,7 +310,7 @@ export function TaskList() {
                           size="icon"
                           onClick={() => toggleTaskCompletion(task.id)}
                         >
-                          {task.completed ? (
+                          {task.status === 'completed' ? (
                             <CheckCircle2 className="w-5 h-5 text-green-500" />
                           ) : (
                             <Circle className="w-5 h-5 text-muted-foreground" />

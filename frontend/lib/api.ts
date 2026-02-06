@@ -146,6 +146,10 @@ class ApiClient {
   }
 
   createTask = async (data: CreateTaskRequest): Promise<Task> => {
+    // Set default status if not provided
+    if (!data.status) {
+      data = { ...data, status: 'pending' }
+    }
     return this.instance.post<ApiResponse<Task>>('/api/tasks', data).then(this.handleResponse)
   }
 
