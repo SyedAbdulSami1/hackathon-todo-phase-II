@@ -1,8 +1,19 @@
+// ============================================
+// Domain Types
+// ============================================
+
 export interface User {
   id: string
   email: string
   name: string
   created_at: string
+  role?: string
+  permissions?: string[]
+  avatar?: string
+  phone?: string
+  company?: string
+  location?: string
+  email_verified?: boolean
 }
 
 export interface Task {
@@ -15,16 +26,13 @@ export interface Task {
   user_id: string
 }
 
-export interface CreateTaskRequest {
-  title: string
-  description?: string
-}
+// ============================================
+// Request Types (using Pick/Omit for DRY)
+// ============================================
 
-export interface UpdateTaskRequest {
-  title?: string
-  description?: string
-  completed?: boolean
-}
+export type CreateTaskRequest = Pick<Task, 'title' | 'description'>
+
+export type UpdateTaskRequest = Partial<CreateTaskRequest & Pick<Task, 'completed'>>
 
 export interface LoginRequest {
   email: string
@@ -37,9 +45,22 @@ export interface RegisterRequest {
   name: string
 }
 
+// ============================================
+// API Response Types
+// ============================================
+
 export interface ApiResponse<T> {
   data: T
   message?: string
+}
+
+export interface ApiError {
+  message: string
+  status: number
+  details?: Array<{
+    field: string
+    message: string
+  }>
 }
 
 export interface AuthResponse {
@@ -47,5 +68,55 @@ export interface AuthResponse {
   token: string
 }
 
+// ============================================
+// Utility Types
+// ============================================
+
 export type TaskStatus = 'all' | 'pending' | 'completed'
 export type TaskSort = 'created' | 'title' | 'due_date'
+
+// Discriminated union for task filter state
+export type TaskFilterState = {
+  status: TaskStatus
+  sort: TaskSort
+  search?: string
+}
+
+// ============================================
+// Type Guards
+// ============================================
+
+export function isApiError(error: unknown): error is ApiError {
+  return (
+    typeof error === 'object' &&
+    error !== null &&
+    'message' in error &&
+    'status' in error
+  )
+}
+
+export function isTask(obj: unknown): obj is Task {
+  return (
+    typeof obj === 'object' &&
+    obj !== null &&
+    'id' in obj &&
+    'title' in obj &&
+    'completed' in obj
+  )
+}
+
+// ============================================
+// Helper Types for Forms
+// ============================================
+
+export type FormState<T> = {
+  data: T
+  errors: Partial<Record<keyof T, string>>
+  isSubmitting: boolean
+}
+
+export type AsyncState<T> = {
+  data: T | null
+  isLoading: boolean
+  error: ApiError | null
+}

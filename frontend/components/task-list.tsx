@@ -5,8 +5,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Checkbox } from '@/components/ui/checkbox'
-import { Plus, Trash2, CheckCircle2, Circle } from 'lucide-react'
-import { apiClient, Task } from '@/lib/api'
+import { Alert, AlertDescription } from '@/components/ui/alert'
+import { Plus, Trash2, CheckCircle2, Circle, Edit2, Save, X, AlertCircle, Loader2 } from 'lucide-react'
+import { apiClient, Task, getApiError } from '@/lib/api'
 import { TaskStatus } from '@/types'
 
 export function TaskList() {
@@ -16,9 +17,24 @@ export function TaskList() {
   const [filterStatus, setFilterStatus] = useState<TaskStatus>('all')
   const [newTaskTitle, setNewTaskTitle] = useState('')
   const [newTaskDescription, setNewTaskDescription] = useState('')
+  const [editingTask, setEditingTask] = useState<Task | null>(null)
+  const [editTitle, setEditTitle] = useState('')
+  const [editDescription, setEditDescription] = useState('')
+  const [submittingTask, setSubmittingTask] = useState<number | null>(null)
 
   useEffect(() => {
     fetchTasks()
+  }, [filterStatus])
+
+  // Auto-refresh tasks every 30 seconds when user is active
+  useEffect(() => {
+    const interval = setInterval(() => {
+      if (document.visibilityState === 'visible') {
+        fetchTasks()
+      }
+    }, 30000)
+
+    return () => clearInterval(interval)
   }, [filterStatus])
 
   const fetchTasks = async () => {
@@ -28,7 +44,7 @@ export function TaskList() {
       setTasks(response)
       setError(null)
     } catch (err) {
-      setError('Failed to fetch tasks')
+      setError(getApiError(err))
       console.error(err)
     } finally {
       setLoading(false)
@@ -47,9 +63,10 @@ export function TaskList() {
 
       setNewTaskTitle('')
       setNewTaskDescription('')
+      setError(null)
       fetchTasks()
     } catch (err) {
-      setError('Failed to create task')
+      setError(getApiError(err))
       console.error(err)
     }
   }
@@ -61,22 +78,64 @@ export function TaskList() {
         await apiClient.updateTask(taskId, {
           completed: !task.completed,
         })
+        setError(null)
         fetchTasks()
       }
     } catch (err) {
-      setError('Failed to update task')
+      setError(getApiError(err))
       console.error(err)
     }
   }
 
   const deleteTask = async (taskId: number) => {
+    if (!confirm('Are you sure you want to delete this task?')) {
+      return
+    }
+
+    setSubmittingTask(taskId)
     try {
       await apiClient.deleteTask(taskId)
+      setError(null)
       fetchTasks()
     } catch (err) {
-      setError('Failed to delete task')
+      setError(getApiError(err))
+      console.error(err)
+    } finally {
+      setSubmittingTask(null)
+    }
+  }
+
+  const startEditing = (task: Task) => {
+    setEditingTask(task)
+    setEditTitle(task.title)
+    setEditDescription(task.description || '')
+    setError(null)
+  }
+
+  const cancelEditing = () => {
+    setEditingTask(null)
+    setEditTitle('')
+    setEditDescription('')
+  }
+
+  const saveEdit = async () => {
+    if (!editingTask || !editTitle.trim()) return
+
+    try {
+      await apiClient.updateTask(editingTask.id, {
+        title: editTitle.trim(),
+        description: editDescription.trim() || undefined,
+      })
+      cancelEditing()
+      fetchTasks()
+    } catch (err) {
+      setError(getApiError(err))
       console.error(err)
     }
+  }
+
+  const clearError = () => {
+    setError(null)
   }
 
   const filteredTasks = tasks
@@ -91,6 +150,24 @@ export function TaskList() {
 
   return (
     <div className="space-y-6">
+      {/* Error Alert */}
+      {error && (
+        <Alert variant="destructive">
+          <AlertCircle className="h-4 w-4" />
+          <AlertDescription className="flex items-center justify-between">
+            <span>{error}</span>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={clearError}
+              className="ml-4 h-6 w-6 p-0"
+            >
+              ×
+            </Button>
+          </AlertDescription>
+        </Alert>
+      )}
+
       {/* Create Task Form */}
       <Card>
         <CardHeader>
@@ -116,8 +193,12 @@ export function TaskList() {
                 maxLength={1000}
               />
             </div>
-            <Button type="submit" disabled={!newTaskTitle.trim()}>
-              <Plus className="w-4 h-4 mr-2" />
+            <Button type="submit" disabled={!newTaskTitle.trim()} className="w-full">
+              {loading ? (
+                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+              ) : (
+                <Plus className="w-4 h-4 mr-2" />
+              )}
               Add Task
             </Button>
           </form>
@@ -168,38 +249,94 @@ export function TaskList() {
                       onCheckedChange={() => toggleTaskCompletion(task.id)}
                     />
                     <div className="flex-1">
-                      <h3 className={`font-medium ${task.completed ? 'line-through text-muted-foreground' : ''}`}>
-                        {task.title}
-                      </h3>
-                      {task.description && (
-                        <p className={`text-sm text-muted-foreground mt-1 ${task.completed ? 'line-through' : ''}`}>
-                          {task.description}
-                        </p>
+                      {editingTask?.id === task.id ? (
+                        <div className="space-y-3">
+                          <Input
+                            value={editTitle}
+                            onChange={(e) => setEditTitle(e.target.value)}
+                            placeholder="Task title"
+                            maxLength={200}
+                            className="font-medium"
+                          />
+                          <Input
+                            value={editDescription}
+                            onChange={(e) => setEditDescription(e.target.value)}
+                            placeholder="Task description"
+                            maxLength={1000}
+                          />
+                          <p className="text-xs text-muted-foreground">
+                            Created: {new Date(task.created_at).toLocaleDateString()}
+                          </p>
+                        </div>
+                      ) : (
+                        <>
+                          <h3 className={`font-medium ${task.completed ? 'line-through text-muted-foreground' : ''}`}>
+                            {task.title}
+                          </h3>
+                          {task.description && (
+                            <p className={`text-sm text-muted-foreground mt-1 ${task.completed ? 'line-through' : ''}`}>
+                              {task.description}
+                            </p>
+                          )}
+                          <p className="text-xs text-muted-foreground mt-2">
+                            Created: {new Date(task.created_at).toLocaleDateString()}
+                          </p>
+                        </>
                       )}
-                      <p className="text-xs text-muted-foreground mt-2">
-                        Created: {new Date(task.created_at).toLocaleDateString()}
-                      </p>
                     </div>
                   </div>
                   <div className="flex items-center space-x-2">
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => toggleTaskCompletion(task.id)}
-                    >
-                      {task.completed ? (
-                        <CheckCircle2 className="w-5 h-5 text-green-500" />
-                      ) : (
-                        <Circle className="w-5 h-5 text-muted-foreground" />
-                      )}
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => deleteTask(task.id)}
-                    >
-                      <Trash2 className="w-5 h-5 text-red-500" />
-                    </Button>
+                    {editingTask?.id === task.id ? (
+                      <>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={saveEdit}
+                        >
+                          <Save className="w-5 h-5 text-green-500" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={cancelEditing}
+                        >
+                          <X className="w-5 h-5 text-red-500" />
+                        </Button>
+                      </>
+                    ) : (
+                      <>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => toggleTaskCompletion(task.id)}
+                        >
+                          {task.completed ? (
+                            <CheckCircle2 className="w-5 h-5 text-green-500" />
+                          ) : (
+                            <Circle className="w-5 h-5 text-muted-foreground" />
+                          )}
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => startEditing(task)}
+                        >
+                          <Edit2 className="w-5 h-5 text-blue-500" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => deleteTask(task.id)}
+                          disabled={submittingTask === task.id}
+                        >
+                          {submittingTask === task.id ? (
+                            <Loader2 className="w-5 h-5 text-red-500 animate-spin" />
+                          ) : (
+                            <Trash2 className="w-5 h-5 text-red-500" />
+                          )}
+                        </Button>
+                      </>
+                    )}
                   </div>
                 </div>
               </CardContent>

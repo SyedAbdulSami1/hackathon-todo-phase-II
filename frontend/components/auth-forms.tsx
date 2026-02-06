@@ -7,7 +7,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { authClient, LoginRequest, RegisterRequest } from '@/lib/auth'
 import { Alert, AlertDescription } from '@/components/ui/alert'
-import { Loader2 } from 'lucide-react'
+import { Loader2, AlertCircle } from 'lucide-react'
+import { getApiError } from '@/lib/auth'
 import { useRouter } from 'next/navigation'
 
 interface AuthFormsProps {
@@ -49,7 +50,7 @@ export function AuthForms({ onSuccess }: AuthFormsProps) {
         router.push('/')
       }, 1000)
     } catch (err: any) {
-      setError(err.response?.data?.detail || 'Login failed')
+      setError(getApiError(err))
     } finally {
       setLoading(false)
     }
@@ -75,7 +76,7 @@ export function AuthForms({ onSuccess }: AuthFormsProps) {
         router.push('/')
       }, 1000)
     } catch (err: any) {
-      setError(err.response?.data?.detail || 'Registration failed')
+      setError(getApiError(err))
     } finally {
       setLoading(false)
     }

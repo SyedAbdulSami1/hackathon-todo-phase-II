@@ -1,79 +1,204 @@
-import axios from 'axios'
+import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse, AxiosError } from 'axios'
+import type {
+  Task,
+  CreateTaskRequest,
+  UpdateTaskRequest,
+  TaskStatus,
+  ApiResponse,
+  ApiError,
+  User,
+  AuthResponse,
+  LoginRequest,
+  RegisterRequest
+} from '@/types'
+
+// ============================================
+// Configuration
+// ============================================
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
 
-const api = axios.create({
-  baseURL: API_BASE_URL,
-  headers: {
-    'Content-Type': 'application/json',
-  },
-})
+// ============================================
+// API Client Class
+// ============================================
 
-// Request interceptor to add auth token
-api.interceptors.request.use((config) => {
-  const token = localStorage.getItem('auth_token')
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`
+class ApiClient {
+  private instance: AxiosInstance
+  public token: string | null = null
+
+  constructor(baseURL: string) {
+    this.instance = axios.create({
+      baseURL,
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    })
+
+    // Initialize from localStorage
+    if (typeof window !== 'undefined') {
+      this.token = localStorage.getItem('auth_token')
+    }
+
+    this.setupInterceptors()
   }
-  return config
-})
 
-// Response interceptor to handle auth errors
-api.interceptors.response.use(
-  (response) => response,
-  (error) => {
+  // ============================================
+  // Private Methods
+  // ============================================
+
+  private setupInterceptors(): void {
+    // Request interceptor to add auth token
+    this.instance.interceptors.request.use(
+      (config) => {
+        if (this.token) {
+          config.headers.Authorization = `Bearer ${this.token}`
+        }
+        return config
+      },
+      (error) => Promise.reject(error)
+    )
+
+    // Response interceptor for auth errors
+    this.instance.interceptors.response.use(
+      this.handleResponse,
+      this.handleError
+    )
+  }
+
+  private handleResponse = <T>(response: AxiosResponse<ApiResponse<T>>): T => {
+    return response.data.data
+  }
+
+  private handleError = (error: AxiosError): never => {
     if (error.response?.status === 401) {
-      localStorage.removeItem('auth_token')
-      // Redirect to login page
+      this.clearAuth()
       if (typeof window !== 'undefined') {
         window.location.href = '/login'
       }
     }
-    return Promise.reject(error)
+    throw this.normalizeError(error)
   }
-)
 
-export interface Task {
-  id: number
-  title: string
-  description?: string
-  completed: boolean
-  created_at: string
-  updated_at: string
-}
+  private normalizeError(error: unknown): ApiError {
+    if (axios.isAxiosError(error) && error.response) {
+      const { status, data } = error.response
+      return {
+        message: (data as any)?.error?.message || `Error ${status}`,
+        status: status,
+        details: (data as any)?.error?.details,
+      }
+    }
 
-export interface CreateTaskRequest {
-  title: string
-  description?: string
-}
+    if (error instanceof Error) {
+      return {
+        message: error.message,
+        status: 0,
+      }
+    }
 
-export interface UpdateTaskRequest {
-  title?: string
-  description?: string
-  completed?: boolean
-}
+    return {
+      message: 'An unknown error occurred',
+      status: 500,
+    }
+  }
 
-export const apiClient = {
-  // Task operations
-  getTasks: async (status?: 'all' | 'pending' | 'completed'): Promise<Task[]> => {
+  // ============================================
+  // Auth Methods
+  // ============================================
+
+  login = async (credentials: LoginRequest): Promise<AuthResponse> => {
+    const response = await this.instance.post<ApiResponse<AuthResponse>>('/api/auth/login', credentials)
+    this.setAuth(response.data.token)
+    return response.data
+  }
+
+  register = async (userData: RegisterRequest): Promise<AuthResponse> => {
+    const response = await this.instance.post<ApiResponse<AuthResponse>>('/api/auth/register', userData)
+    this.setAuth(response.data.token)
+    return response.data
+  }
+
+  logout = (): void => {
+    this.clearAuth()
+  }
+
+  private setAuth(token: string): void {
+    this.token = token
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('auth_token', token)
+    }
+  }
+
+  private clearAuth(): void {
+    this.token = null
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('auth_token')
+    }
+  }
+
+  // ============================================
+  // Task Methods
+  // ============================================
+
+  getTasks = async (status?: TaskStatus): Promise<Task[]> => {
     const params = status ? { status } : {}
-    const response = await api.get('/api/tasks', { params })
-    return response.data
-  },
+    return this.instance.get<ApiResponse<Task[]>>('/api/tasks', { params }).then(this.handleResponse)
+  }
 
-  createTask: async (data: CreateTaskRequest): Promise<Task> => {
-    const response = await api.post('/api/tasks', data)
-    return response.data
-  },
+  createTask = async (data: CreateTaskRequest): Promise<Task> => {
+    return this.instance.post<ApiResponse<Task>>('/api/tasks', data).then(this.handleResponse)
+  }
 
-  updateTask: async (id: number, data: UpdateTaskRequest): Promise<Task> => {
-    const response = await api.put(`/api/tasks/${id}`, data)
-    return response.data
-  },
+  updateTask = async (id: number, data: UpdateTaskRequest): Promise<Task> => {
+    return this.instance.put<ApiResponse<Task>>(`/api/tasks/${id}`, data).then(this.handleResponse)
+  }
 
-  deleteTask: async (id: number): Promise<void> => {
-    await api.delete(`/api/tasks/${id}`)
-  },
+  deleteTask = async (id: number): Promise<void> => {
+    await this.instance.delete<ApiResponse<void>>(`/api/tasks/${id}`)
+  }
+
+  // ============================================
+  // User Methods
+  // ============================================
+
+  getCurrentUser = async (): Promise<User> => {
+    return this.instance.get<ApiResponse<User>>('/api/auth/me').then(this.handleResponse)
+  }
+
+  // ============================================
+  // Generic Methods
+  // ============================================
+
+  get = async <T>(url: string, config?: AxiosRequestConfig): Promise<T> => {
+    return this.instance.get<ApiResponse<T>>(url, config).then(this.handleResponse)
+  }
+
+  post = async <T>(url: string, data?: any, config?: AxiosRequestConfig): Promise<T> => {
+    return this.instance.post<ApiResponse<T>>(url, data, config).then(this.handleResponse)
+  }
+
+  put = async <T>(url: string, data?: any, config?: AxiosRequestConfig): Promise<T> => {
+    return this.instance.put<ApiResponse<T>>(url, data, config).then(this.handleResponse)
+  }
+
+  delete = async <T>(url: string, config?: AxiosRequestConfig): Promise<T> => {
+    return this.instance.delete<ApiResponse<T>>(url, config).then(this.handleResponse)
+  }
 }
 
-export default api
+// ============================================
+// Export
+// ============================================
+
+export const apiClient = new ApiClient(API_BASE_URL)
+
+// Legacy export for backward compatibility
+export default apiClient
+
+// Helper function for error handling (can be removed once all code is updated)
+export function getApiError(error: unknown): string {
+  if (typeof error === 'object' && error !== null && 'message' in error) {
+    return (error as ApiError).message
+  }
+  return 'An error occurred'
+}
