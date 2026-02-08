@@ -107,7 +107,12 @@ class ApiClient {
   // ============================================
 
   login = async (credentials: LoginRequest): Promise<AuthResponse> => {
-    const response = await this.instance.post<ApiResponse<AuthResponse>>('/api/auth/login', credentials)
+    // Login endpoint expects form data, not JSON
+    const formData = new FormData()
+    formData.append('username', credentials.username)
+    formData.append('password', credentials.password)
+
+    const response = await this.instance.post<ApiResponse<AuthResponse>>('/api/auth/login', formData)
     this.setAuth(response.data.token)
     return response.data
   }

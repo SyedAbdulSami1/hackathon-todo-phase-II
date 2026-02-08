@@ -64,7 +64,7 @@ export function Layout({ children }: LayoutProps) {
             <div>
               <h1 className="text-2xl font-bold text-foreground">Todo App</h1>
               <p className="text-sm text-muted-foreground">
-                Welcome back, {user.name}!
+                Welcome back, {user.username}!
               </p>
             </div>
             <Button

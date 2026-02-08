@@ -17,11 +17,11 @@ interface AuthFormsProps {
 
 export function AuthForms({ onSuccess }: AuthFormsProps) {
   const [loginData, setLoginData] = useState<LoginRequest>({
-    email: '',
+    username: '',
     password: '',
   })
   const [registerData, setRegisterData] = useState<RegisterRequest>({
-    name: '',
+    username: '',
     email: '',
     password: '',
   })
@@ -32,7 +32,7 @@ export function AuthForms({ onSuccess }: AuthFormsProps) {
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!loginData.email || !loginData.password) {
+    if (!loginData.username || !loginData.password) {
       setError('Please fill in all fields')
       return
     }
@@ -58,7 +58,7 @@ export function AuthForms({ onSuccess }: AuthFormsProps) {
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!registerData.name || !registerData.email || !registerData.password) {
+    if (!registerData.username || !registerData.email || !registerData.password) {
       setError('Please fill in all fields')
       return
     }
@@ -115,10 +115,10 @@ export function AuthForms({ onSuccess }: AuthFormsProps) {
             <form onSubmit={handleLogin} className="space-y-4">
               <div>
                 <Input
-                  type="email"
-                  placeholder="Email"
-                  value={loginData.email}
-                  onChange={(e) => setLoginData(prev => ({ ...prev, email: e.target.value }))}
+                  type="text"
+                  placeholder="Username or Email"
+                  value={loginData.username}
+                  onChange={(e) => setLoginData(prev => ({ ...prev, username: e.target.value }))}
                   required
                   disabled={loading}
                 />
@@ -144,9 +144,9 @@ export function AuthForms({ onSuccess }: AuthFormsProps) {
             <form onSubmit={handleRegister} className="space-y-4">
               <div>
                 <Input
-                  placeholder="Full Name"
-                  value={registerData.name}
-                  onChange={(e) => setRegisterData(prev => ({ ...prev, name: e.target.value }))}
+                  placeholder="Username"
+                  value={registerData.username}
+                  onChange={(e) => setRegisterData(prev => ({ ...prev, username: e.target.value }))}
                   required
                   disabled={loading}
                 />
