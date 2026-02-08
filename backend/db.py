@@ -7,7 +7,7 @@ DATABASE_URL = os.getenv("DATABASE_URL", "postgresql://neondb_owner:your_passwor
 # Create SQLModel engine
 engine = create_engine(
     DATABASE_URL,
-    echo=True,  # Log SQL queries for development
+    echo=False,  # Disable query logging for now
     pool_pre_ping=True,  # Enable connection health checks
     pool_size=5,
     max_overflow=10

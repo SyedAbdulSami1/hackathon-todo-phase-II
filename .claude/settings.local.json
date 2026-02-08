@@ -4,7 +4,8 @@
       "Bash(.\\\\.\\\\.specify\\\\scripts\\\\powershell\\\\check-prerequisites.ps1:*)",
       "Bash(npm install)",
       "Bash(pip install:*)",
-      "Bash(uvicorn:*)"
+      "Bash(uvicorn:*)",
+      "Bash(python:*)"
     ]
   }
 }

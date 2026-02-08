@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { Button } from '@/components/ui/button'
-import { authClient } from '@/lib/auth'
+import { authService } from '@/lib/auth'
 import { User } from '@/types'
 import { LogOut, User as UserIcon } from 'lucide-react'
 
@@ -20,7 +20,7 @@ export function Layout({ children }: LayoutProps) {
 
   const checkAuth = async () => {
     try {
-      const currentUser = await authClient.getCurrentUser()
+      const currentUser = await authService.getCurrentUser()
       setUser(currentUser)
     } catch (error) {
       console.error('Auth check failed:', error)
@@ -30,7 +30,7 @@ export function Layout({ children }: LayoutProps) {
   }
 
   const handleLogout = () => {
-    authClient.logout()
+    authService.logout()
     window.location.href = '/login'
   }
 

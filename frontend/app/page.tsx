@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Layout } from '@/components/layout'
 import { TaskList } from '@/components/task-list'
-import { authClient } from '@/lib/auth'
+import { authService } from '@/lib/auth'
 
 export default function Home() {
   const [isAuthenticated, setIsAuthenticated] = useState(false)
@@ -17,7 +17,7 @@ export default function Home() {
 
   const checkAuth = async () => {
     try {
-      const user = await authClient.getCurrentUser()
+      const user = await authService.getCurrentUser()
       if (user) {
         setIsAuthenticated(true)
       } else {

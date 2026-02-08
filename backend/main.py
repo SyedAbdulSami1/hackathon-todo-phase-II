@@ -7,9 +7,15 @@ from routers import auth, tasks
 from db import engine
 from middleware.error_handler import validation_exception_handler, http_exception_handler, general_exception_handler
 
-# Create database tables
+# Load environment variables
+from dotenv import load_dotenv
+load_dotenv()
+
+# Import after loading env vars
 from models import BaseSQLModel
 from db import engine
+
+# Create database tables
 BaseSQLModel.metadata.create_all(bind=engine)
 
 app = FastAPI(

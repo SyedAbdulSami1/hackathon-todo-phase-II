@@ -5,10 +5,10 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { authClient, LoginRequest, RegisterRequest } from '@/lib/auth'
+import { authService, LoginRequest, RegisterRequest } from '@/lib/auth'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Loader2, AlertCircle } from 'lucide-react'
-import { getApiError } from '@/lib/auth'
+import { getApiError } from '@/lib/api'
 import { useRouter } from 'next/navigation'
 
 interface AuthFormsProps {
@@ -41,8 +41,8 @@ export function AuthForms({ onSuccess }: AuthFormsProps) {
       setLoading(true)
       setError(null)
 
-      const response = await authClient.login(loginData)
-      authClient.saveAuth(response.token, response.user)
+      const response = await authService.login(loginData)
+      authService.saveAuth(response.token, response.user)
 
       setIsSuccess(true)
       onSuccess?.()
@@ -67,8 +67,8 @@ export function AuthForms({ onSuccess }: AuthFormsProps) {
       setLoading(true)
       setError(null)
 
-      const response = await authClient.register(registerData)
-      authClient.saveAuth(response.token, response.user)
+      const response = await authService.register(registerData)
+      authService.saveAuth(response.token, response.user)
 
       setIsSuccess(true)
       onSuccess?.()
