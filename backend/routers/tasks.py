@@ -94,13 +94,120 @@ def read_tasks(
     session: Session = Depends(get_session)
 ):
     """Get tasks for current user with optional filtering"""
-    query = select(Task).where(Task.user_id == current_user.id)
+    # Check permissions based on role
+    if current_user.role == "student":
+        query = select(Task).where(Task.user_id == current_user.id)
+    else:
+        # Teacher and Admin can see all tasks
+        query = select(Task)
 
     if status:
         query = query.where(Task.status == status)
 
     tasks = session.exec(query.offset(skip).limit(limit)).all()
     return tasks
+
+@router.get("/all", response_model=List[TaskResponse])
+def read_all_tasks(
+    current_user: User = Depends(require_permission("read:all-tasks")),
+    session: Session = Depends(get_session)
+):
+    """Get all tasks (admin/teacher only)"""
+    from sqlmodel import select
+    tasks = session.exec(select(Task)).all()
+    return tasks
+
+@router.put("/{task_id}", response_model=TaskResponse)
+def update_task(
+    task_id: int,
+    task_update: TaskUpdate,
+    current_user: User = Depends(get_current_active_user),
+    session: Session = Depends(get_session)
+):
+    """Update a task with permission checks"""
+    task = session.get(Task, task_id)
+    if not task:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Task not found"
+        )
+
+    # Permission checks
+    if current_user.role == "student":
+        if task.user_id != current_user.id:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Not authorized to update this task"
+            )
+    else:
+        # Teacher/Admin can update any task
+        pass
+
+    # Update fields if provided
+    update_data = task_update.dict(exclude_unset=True)
+    for field, value in update_data.items():
+        setattr(task, field, value)
+
+    # Update timestamp
+    from datetime import datetime
+    task.updated_at = datetime.utcnow()
+
+    session.add(task)
+    session.commit()
+    session.refresh(task)
+    return task
+
+@router.delete("/{task_id}", response_model=TaskDeleteResponse)
+def delete_task(
+    task_id: int,
+    current_user: User = Depends(get_current_active_user),
+    session: Session = Depends(get_session)
+):
+    """Delete a task with permission checks"""
+    task = session.get(Task, task_id)
+    if not task:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Task not found"
+        )
+
+    # Permission checks
+    if current_user.role == "student":
+        if task.user_id != current_user.id:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Not authorized to delete this task"
+            )
+    else:
+        # Teacher/Admin can delete any task
+        pass
+
+    # Store task info before deletion
+    deleted_task_id = task.id
+    deleted_task_title = task.title
+
+    try:
+        session.delete(task)
+        session.commit()
+    except IntegrityError as e:
+        session.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="Cannot delete task due to database integrity constraint"
+        )
+    except Exception as e:
+        session.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to delete task"
+        )
+
+    from datetime import datetime
+    return TaskDeleteResponse(
+        message=f"Task '{deleted_task_title}' deleted successfully",
+        deleted_task_id=deleted_task_id,
+        deleted_at=datetime.utcnow()
+    )
 
 @router.get("/{task_id}", response_model=TaskResponse)
 def read_task(

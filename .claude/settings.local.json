@@ -5,7 +5,10 @@
       "Bash(npm install)",
       "Bash(pip install:*)",
       "Bash(uvicorn:*)",
-      "Bash(python:*)"
+      "Bash(python:*)",
+      "Bash(curl -X OPTIONS http://localhost:8000/api/tasks -H \"Origin: http://localhost:3000\" -v)",
+      "Bash(curl -X GET \"http://localhost:8000/api/tasks\" -H \"Origin: http://localhost:3000\" -H \"Authorization: Bearer test\" -v)",
+      "Bash(curl -X GET \"http://localhost:8000/\" -H \"Origin: http://localhost:3000\" -v)"
     ]
   }
 }

@@ -15,8 +15,10 @@ load_dotenv()
 from models import BaseSQLModel
 from db import engine
 
-# Create database tables
+
+# Create database tables and seed demo users
 BaseSQLModel.metadata.create_all(bind=engine)
+seed_demo_users()
 
 app = FastAPI(
     title="Todo API",
