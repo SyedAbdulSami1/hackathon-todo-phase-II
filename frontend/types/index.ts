@@ -49,3 +49,9 @@ export interface AuthResponse {
 
 export type TaskStatus = 'all' | 'pending' | 'completed'
 export type TaskSort = 'created' | 'title' | 'due_date'
+
+export interface ApiError {
+  message: string
+  status: number
+  details?: any
+}

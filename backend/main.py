@@ -4,8 +4,8 @@ from routers import auth, tasks
 from db import engine
 
 # Create database tables
-from models import Base
-Base.metadata.create_all(bind=engine)
+from models import BaseSQLModel
+BaseSQLModel.metadata.create_all(bind=engine)
 
 app = FastAPI(
     title="Todo API",
@@ -16,7 +16,7 @@ app = FastAPI(
 # Configure CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"],  # Frontend URL
+    allow_origins=["http://localhost:3000", "http://localhost:3001"],  # Frontend URLs
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

@@ -125,13 +125,11 @@ export class ApiClient {
   // ============================================
 
   login = async (credentials: LoginRequest): Promise<AuthResponse> => {
-    const response = await this.instance.post<ApiResponse<AuthResponse>>('/api/auth/login', credentials)
-    return response.data
+    return this.instance.post<ApiResponse<AuthResponse>>('/api/auth/login', credentials).then(this.handleResponse)
   }
 
   register = async (userData: RegisterRequest): Promise<AuthResponse> => {
-    const response = await this.instance.post<ApiResponse<AuthResponse>>('/api/auth/register', userData)
-    return response.data
+    return this.instance.post<ApiResponse<AuthResponse>>('/api/auth/register', userData).then(this.handleResponse)
   }
 
   getCurrentUser = async (): Promise<User> => {

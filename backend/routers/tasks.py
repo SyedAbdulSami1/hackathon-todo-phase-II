@@ -1,11 +1,12 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlmodel import Session, select
 from typing import List, Optional
-from ..models import (
+from models import (
     Task, TaskCreate, TaskUpdate, TaskResponse,
-    User, get_current_active_user
+    User
 )
-from ..db import get_session
+from db import get_session
+from dependencies.auth import get_current_active_user
 
 router = APIRouter()
 

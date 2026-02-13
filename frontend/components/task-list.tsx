@@ -17,10 +17,6 @@ export function TaskList() {
   const [newTaskTitle, setNewTaskTitle] = useState('')
   const [newTaskDescription, setNewTaskDescription] = useState('')
 
-  useEffect(() => {
-    fetchTasks()
-  }, [filterStatus])
-
   const fetchTasks = async () => {
     try {
       setLoading(true)
@@ -34,6 +30,11 @@ export function TaskList() {
       setLoading(false)
     }
   }
+
+  useEffect(() => {
+    fetchTasks()
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [filterStatus])
 
   const createTask = async (e: React.FormEvent) => {
     e.preventDefault()
