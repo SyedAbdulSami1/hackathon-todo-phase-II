@@ -1,53 +1,87 @@
+# Full-Stack Todo Application
 
-# Todo App
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Next.js](https://img.shields.io/badge/Next.js-000000?style=for-the-badge&logo=next.js&logoColor=white)](https://nextjs.org/)
+[![FastAPI](https://img.shields.io/badge/FastAPI-009688?style=for-the-badge&logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)
+[![Docker](https://img.shields.io/badge/Docker-2496ED?style=for-the-badge&logo=docker&logoColor=white)](https://www.docker.com/)
 
-This is a full-stack Todo application with a Next.js frontend and a FastAPI backend.
+A modern, full-stack Todo application built with Next.js for the frontend and FastAPI for the backend. It features user authentication, task management, and a clean, responsive UI.
 
-## Project Structure
+## Features
 
-```
-├── backend/         # FastAPI backend
-│   ├── main.py
-│   ├── models.py
-│   ├── db.py
-│   ├── requirements.txt
-│   └── routers/
-│       ├── auth.py
-│       └── tasks.py
-└── frontend/        # Next.js frontend
-    ├── app/
-    ├── components/
-    ├── lib/
-    └── package.json
-```
+- **User Authentication:** Secure user registration and login with JWT-based authentication.
+- **Task Management:** Create, read, update, and delete tasks.
+- **Task Filtering:** Filter tasks by status (All, Pending, Completed).
+- **Responsive UI:** A clean and modern user interface that works on all screen sizes.
+- **Containerized:** Easily run the entire application with Docker Compose.
 
-## Running with Docker Compose
+## Tech Stack
 
-This is the recommended way to run the application.
+**Frontend:**
+- [Next.js](https://nextjs.org/)
+- [React](https://reactjs.org/)
+- [TypeScript](https://www.typescriptlang.org/)
+- [Tailwind CSS](https://tailwindcss.com/)
+- [Shadcn UI](https://ui.shadcn.com/)
 
-1.  **Set up the environment variables:**
-    Create a `.env` file in the `backend` directory and add the following, replacing the placeholder with your Neon DB connection string:
+**Backend:**
+- [FastAPI](https://fastapi.tiangolo.com/)
+- [Python](https://www.python.org/)
+- [SQLModel](https://sqlmodel.tiangolo.com/)
+- [PostgreSQL](https://www.postgresql.org/) (with [Neon](https://neon.tech/))
+
+**Tooling:**
+- [Docker](https://www.docker.com/)
+- [Docker Compose](https://docs.docker.com/compose/)
+
+## Getting Started
+
+### Prerequisites
+
+- [Node.js](https://nodejs.org/) (v18 or later)
+- [Python](https://www.python.org/) (v3.8 or later)
+- [Docker](https://www.docker.com/get-started) (for Docker setup)
+
+### Installation
+
+1.  **Clone the repository:**
+    ```bash
+    git clone [YOUR_REPOSITORY_URL_HERE]
+    cd hackathon-todo-phase-II # Or your repository name
     ```
-    DATABASE_URL="postgresql://neondb_owner:your_password@ep-misty-brook-12345.us-east-2.aws.neon.tech/neondb?sslmode=require"
-    ```
+    (Remember to replace `[YOUR_REPOSITORY_URL_HERE]` with your actual repository URL if you fork this project.)
 
-2.  **Run the application:**
+2.  **Set up environment variables:**
+    Create a `.env` file in the `backend` directory by copying the `.env.template` file.
+    ```bash
+    cp backend/.env.template backend/.env
+    ```
+    Update the `DATABASE_URL` in `backend/.env` with your Neon DB connection string.
+
+### Running the Application
+
+There are two ways to run the application:
+
+<details>
+<summary><b>🚀 Using Docker (Recommended for Development)</b></summary>
+
+This setup is optimized for local development with hot-reloading. It is not intended for production deployments.
+
+1.  **Build and run the application:**
     ```bash
     docker-compose up --build
     ```
 
-    The frontend will be available at `http://localhost:3000` and the backend at `http://localhost:8000`.
+2.  **Access the application:**
+    - Frontend: [http://localhost:3000](http://localhost:3000)
+    - Backend: [http://localhost:8000](http://localhost:8000)
 
-## Running the Application Locally
+</details>
 
-### Prerequisites
+<details>
+<summary><b>💻 Running Locally</b></summary>
 
-- Node.js (v18 or later)
-- Python (v3.8 or later)
-- pip
-- virtualenv (recommended)
-
-### Backend Setup
+**Backend:**
 
 1.  **Navigate to the backend directory:**
     ```bash
@@ -60,46 +94,60 @@ This is the recommended way to run the application.
     source venv/bin/activate  # On Windows, use `venv\Scripts\activate`
     ```
 
-3.  **Install the required dependencies:**
+3.  **Install dependencies:**
     ```bash
     pip install -r requirements.txt
     ```
 
-4.  **Set up the environment variables:**
-    Create a `.env` file in the `backend` directory and add the following, replacing the placeholder with your Neon DB connection string:
-    ```
-    DATABASE_URL="postgresql://neondb_owner:your_password@ep-misty-brook-12345.us-east-2.aws.neon.tech/neondb?sslmode=require"
-    ```
-
-5.  **Run the database migrations:**
+4.  **Run database migrations:**
     ```bash
     python migrate_db.py
     ```
 
-6.  **Start the backend server:**
+5.  **Start the server:**
     ```bash
     uvicorn main:app --reload
     ```
-    The backend will be running at `http://127.0.0.1:8000`.
 
-### Frontend Setup
+**Frontend:**
 
 1.  **Navigate to the frontend directory:**
     ```bash
     cd frontend
     ```
 
-2.  **Install the required dependencies:**
+2.  **Install dependencies:**
     ```bash
     npm install
     ```
 
-3.  **Start the frontend development server:**
+3.  **Start the development server:**
     ```bash
     npm run dev
     ```
-    The frontend will be running at `http://localhost:3000`.
 
-### Accessing the Application
+</details>
 
-Open your web browser and navigate to `http://localhost:3000`. You should see the login and registration page. You can create a new account or log in with an existing one.
+## Project Structure
+
+```
+.
+├── backend/         # FastAPI backend
+│   ├── Dockerfile
+│   ├── main.py
+│   ├── models.py
+│   ├── db.py
+│   └── ...
+└── frontend/        # Next.js frontend
+    ├── Dockerfile
+    ├── app/
+    ├── components/
+    ├── lib/
+    └── ...
+├── docker-compose.yml
+└── README.md
+```
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
