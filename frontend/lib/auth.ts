@@ -1,33 +1,17 @@
-import axios from 'axios'
-import api from './api'
-
-export interface User {
-  id: string
-  email: string
-  name: string
-  created_at: string
-}
-
-export interface LoginRequest {
-  email: string
-  password: string
-}
-
-export interface RegisterRequest {
-  email: string
-  password: string
-  name: string
-}
+import { apiClient } from './api-client'
+import { User, LoginRequest, RegisterRequest } from '@/types'
 
 export const authClient = {
   login: async (data: LoginRequest): Promise<{ user: User; token: string }> => {
-    const response = await axios.post(`${api.defaults.baseURL}/api/auth/login`, data)
-    return response.data
+    // Backend expects username, so we send the provided username
+    const response = await apiClient.login({ username: data.username, password: data.password });
+    return { user: response.user, token: response.token };
   },
 
   register: async (data: RegisterRequest): Promise<{ user: User; token: string }> => {
-    const response = await axios.post(`${api.defaults.baseURL}/api/auth/register`, data)
-    return response.data
+    // Backend expects username and email, so we send both
+    const response = await apiClient.register({ username: data.username, email: data.email, password: data.password });
+    return { user: response.user, token: response.token };
   },
 
   logout: (): void => {
@@ -40,8 +24,8 @@ export const authClient = {
     if (!token) return null
 
     try {
-      const response = await api.get('/api/auth/me')
-      return response.data
+      const response = await apiClient.getCurrentUser()
+      return response
     } catch {
       return null
     }

@@ -1,178 +1,105 @@
-# Todo App - Hackathon II
 
-A full-stack todo web application built with Next.js 14 (frontend) and FastAPI (backend) using PostgreSQL database.
+# Todo App
 
-## Project Overview
+This is a full-stack Todo application with a Next.js frontend and a FastAPI backend.
 
-This is a monorepo project using GitHub Spec-Kit for spec-driven development.
-
-### Technologies Used
-
-**Frontend:**
-- Next.js 14 (App Router)
-- TypeScript
-- Tailwind CSS
-- React Hook Form with Zod validation
-- Lucide React Icons
-- Radix UI Components
-
-**Backend:**
-- FastAPI
-- SQLModel (ORM)
-- PostgreSQL
-- Authentication with JWT
-- Pydantic for data validation
-
-### Project Structure
+## Project Structure
 
 ```
-├── frontend/          # Next.js 14 frontend
-│   ├── app/          # App Router pages
-│   ├── components/   # Reusable components
-│   └── lib/          # Utilities and API client
-├── backend/          # FastAPI backend
-│   ├── models.py     # SQLModel database models
-│   ├── routes/       # API route handlers
-│   │   ├── auth.py   # Authentication endpoints
-│   │   └── tasks.py  # Task CRUD endpoints
-│   ├── db.py         # Database connection
-│   └── middleware/   # Custom middleware
-└── specs/            # Specifications
-    ├── features/     # Feature specs
-    ├── api/          # API specs
-    ├── database/    # Database specs
-    └── ui/           # UI specs
+├── backend/         # FastAPI backend
+│   ├── main.py
+│   ├── models.py
+│   ├── db.py
+│   ├── requirements.txt
+│   └── routers/
+│       ├── auth.py
+│       └── tasks.py
+└── frontend/        # Next.js frontend
+    ├── app/
+    ├── components/
+    ├── lib/
+    └── package.json
 ```
 
-## Features
+## Running with Docker Compose
 
-- User authentication (login/register)
-- Create, read, update, and delete tasks
-- Mark tasks as complete/incomplete
-- Filter tasks by status
-- Responsive design with Tailwind CSS
-- Real-time validation
+This is the recommended way to run the application.
 
-## Getting Started
+1.  **Set up the environment variables:**
+    Create a `.env` file in the `backend` directory and add the following, replacing the placeholder with your Neon DB connection string:
+    ```
+    DATABASE_URL="postgresql://neondb_owner:your_password@ep-misty-brook-12345.us-east-2.aws.neon.tech/neondb?sslmode=require"
+    ```
+
+2.  **Run the application:**
+    ```bash
+    docker-compose up --build
+    ```
+
+    The frontend will be available at `http://localhost:3000` and the backend at `http://localhost:8000`.
+
+## Running the Application Locally
 
 ### Prerequisites
 
-- Node.js 18+ for frontend
-- Python 3.10+ for backend
-- PostgreSQL database (Neon recommended)
-- npm or yarn for package management
-
-### Environment Variables
-
-Create a `.env` file in the backend directory:
-
-```env
-DATABASE_URL=postgresql://username:password@localhost/todo_db
-SECRET_KEY=your-secret-key-here
-ALGORITHM=HS256
-ACCESS_TOKEN_EXPIRE_MINUTES=30
-```
-
-## Installation
-
-### Frontend Setup
-
-1. Navigate to the frontend directory:
-```bash
-cd frontend
-```
-
-2. Install dependencies:
-```bash
-npm install
-```
+- Node.js (v18 or later)
+- Python (v3.8 or later)
+- pip
+- virtualenv (recommended)
 
 ### Backend Setup
 
-1. Navigate to the backend directory:
-```bash
-cd backend
-```
+1.  **Navigate to the backend directory:**
+    ```bash
+    cd backend
+    ```
 
-2. Install Python dependencies:
-```bash
-pip install -r requirements.txt
-```
+2.  **Create and activate a virtual environment:**
+    ```bash
+    python -m venv venv
+    source venv/bin/activate  # On Windows, use `venv\Scripts\activate`
+    ```
 
-## Running the Application
+3.  **Install the required dependencies:**
+    ```bash
+    pip install -r requirements.txt
+    ```
 
-### Option 1: Run Both Services Separately
+4.  **Set up the environment variables:**
+    Create a `.env` file in the `backend` directory and add the following, replacing the placeholder with your Neon DB connection string:
+    ```
+    DATABASE_URL="postgresql://neondb_owner:your_password@ep-misty-brook-12345.us-east-2.aws.neon.tech/neondb?sslmode=require"
+    ```
 
-**Start Frontend:**
-```bash
-cd frontend
-npm run dev
-```
-Frontend will be available at: http://localhost:3000
+5.  **Run the database migrations:**
+    ```bash
+    python migrate_db.py
+    ```
 
-**Start Backend:**
-```bash
-cd backend
-uvicorn main:app --reload --port 8000
-```
-Backend API will be available at: http://localhost:8000
-API documentation at: http://localhost:8000/docs
+6.  **Start the backend server:**
+    ```bash
+    uvicorn main:app --reload
+    ```
+    The backend will be running at `http://127.0.0.1:8000`.
 
-### Option 2: Use Docker Compose
+### Frontend Setup
 
-```bash
-docker-compose up
-```
+1.  **Navigate to the frontend directory:**
+    ```bash
+    cd frontend
+    ```
 
-This will start both services:
-- Frontend: http://localhost:3000
-- Backend: http://localhost:8000
+2.  **Install the required dependencies:**
+    ```bash
+    npm install
+    ```
 
-## API Endpoints
+3.  **Start the frontend development server:**
+    ```bash
+    npm run dev
+    ```
+    The frontend will be running at `http://localhost:3000`.
 
-### Authentication
-- `POST /api/auth/register` - Register new user
-- `POST /api/auth/login` - Login user
-- `GET /api/auth/me` - Get current user
+### Accessing the Application
 
-### Tasks
-- `GET /api/tasks` - Get all tasks for current user
-- `POST /api/tasks` - Create new task
-- `PUT /api/tasks/{task_id}` - Update task
-- `DELETE /api/tasks/{task_id}` - Delete task
-- `PUT /api/tasks/{task_id}/complete` - Mark task as complete
-
-## Development Workflow
-
-1. Read relevant specs: `specs/features/[feature].md`
-2. Implement backend changes
-3. Implement frontend changes
-4. Test and iterate
-
-## Scripts
-
-### Frontend Scripts
-```bash
-npm run dev      # Start development server
-npm run build    # Build for production
-npm start        # Start production server
-npm run lint     # Run ESLint
-npm run test     # Run tests
-```
-
-### Backend Scripts
-```bash
-uvicorn main:app --reload  # Start development server
-pytest                      # Run tests
-```
-
-## Contributing
-
-1. Follow the spec-driven development workflow
-2. Update specs when requirements change
-3. Run tests before committing
-4. Follow the project structure guidelines
-
-## License
-
-MIT License
+Open your web browser and navigate to `http://localhost:3000`. You should see the login and registration page. You can create a new account or log in with an existing one.

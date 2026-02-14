@@ -1,7 +1,7 @@
 export interface User {
   id: string
   email: string
-  name: string
+  username: string
   created_at: string
 }
 
@@ -9,7 +9,7 @@ export interface Task {
   id: number
   title: string
   description?: string
-  completed: boolean
+  status: 'pending' | 'in_progress' | 'completed'
   created_at: string
   updated_at: string
   user_id: string
@@ -23,18 +23,18 @@ export interface CreateTaskRequest {
 export interface UpdateTaskRequest {
   title?: string
   description?: string
-  completed?: boolean
+  status?: 'pending' | 'in_progress' | 'completed'
 }
 
 export interface LoginRequest {
-  email: string
+  username: string
   password: string
 }
 
 export interface RegisterRequest {
+  username: string
   email: string
   password: string
-  name: string
 }
 
 export interface ApiResponse<T> {
@@ -47,7 +47,7 @@ export interface AuthResponse {
   token: string
 }
 
-export type TaskStatus = 'all' | 'pending' | 'completed'
+export type TaskStatus = 'all' | 'pending' | 'in_progress' | 'completed'
 export type TaskSort = 'created' | 'title' | 'due_date'
 
 export interface ApiError {

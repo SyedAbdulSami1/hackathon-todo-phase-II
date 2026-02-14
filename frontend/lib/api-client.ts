@@ -60,8 +60,8 @@ export class ApiClient {
     )
   }
 
-  private handleResponse = <T>(response: AxiosResponse<ApiResponse<T>>): T => {
-    return response.data.data
+  private handleResponse = <T>(response: AxiosResponse<T>): T => {
+    return response.data
   }
 
   private handleError = (error: AxiosError): never => {

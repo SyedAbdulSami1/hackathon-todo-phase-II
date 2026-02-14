@@ -4,12 +4,13 @@ import { useState, useEffect } from 'react'
 import { TaskCard } from './task-card'
 import { TaskFilters } from './task-filters'
 import { TaskForm } from './task-form'
-import { EmptyState, NoTasksEmptyState, AllTasksCompletedEmptyState, NoFilteredTasksEmptyState } from './empty-state'
+import { NoTasksEmptyState, AllTasksCompletedEmptyState, NoFilteredTasksEmptyState } from './empty-state'
 import { LoadingSkeleton } from './loading-skeleton'
 import { ErrorBoundary } from './error-boundary'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Task, CreateTaskRequest } from '@/lib/api'
+import { apiClient, getApiError } from '@/lib/api-client'
+import { Task, CreateTaskRequest, UpdateTaskRequest } from '@/types'
 import { TaskStatus } from '@/types'
 import { cn } from '@/lib/utils'
 
@@ -28,17 +29,11 @@ export function TaskList() {
     try {
       setLoading(true)
       setError(null)
-
-      const response = await fetch(`/api/tasks?status=${filterStatus}`)
-      if (!response.ok) {
-        throw new Error('Failed to fetch tasks')
-      }
-
-      const data = await response.json()
+      const data = await apiClient.getTasks(filterStatus)
       setTasks(data)
     } catch (err) {
       console.error('Error fetching tasks:', err)
-      setError('Failed to fetch tasks. Please try again later.')
+      setError(getApiError(err))
     } finally {
       setLoading(false)
     }
@@ -47,18 +42,7 @@ export function TaskList() {
   const createTask = async (taskData: CreateTaskRequest) => {
     setIsCreating(true)
     try {
-      const response = await fetch('/api/tasks', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(taskData),
-      })
-
-      if (!response.ok) {
-        throw new Error('Failed to create task')
-      }
-
+      await apiClient.createTask(taskData)
       await fetchTasks() // Refresh the task list
       setIsCreating(false)
     } catch (err) {
@@ -73,19 +57,11 @@ export function TaskList() {
       const task = tasks.find(t => t.id === taskId)
       if (!task) return
 
-      const response = await fetch(`/api/tasks/${taskId}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          completed: !task.completed,
-        }),
-      })
+      const newStatus = task.status === 'completed' ? 'pending' : 'completed'
 
-      if (!response.ok) {
-        throw new Error('Failed to update task')
-      }
+      await apiClient.updateTask(taskId, {
+        status: newStatus,
+      })
 
       await fetchTasks() // Refresh the task list
     } catch (err) {
@@ -95,19 +71,12 @@ export function TaskList() {
   }
 
   const deleteTask = async (taskId: number) => {
-    if (!confirm('Are you sure you want to delete this task?')) {
+    if (typeof window !== 'undefined' && !window.confirm('Are you sure you want to delete this task?')) {
       return
     }
 
     try {
-      const response = await fetch(`/api/tasks/${taskId}`, {
-        method: 'DELETE',
-      })
-
-      if (!response.ok) {
-        throw new Error('Failed to delete task')
-      }
-
+      await apiClient.deleteTask(taskId)
       await fetchTasks() // Refresh the task list
     } catch (err) {
       console.error('Error deleting task:', err)
@@ -122,25 +91,15 @@ export function TaskList() {
   // Filter tasks based on status
   const filteredTasks = tasks.filter(task => {
     if (filterStatus === 'all') return true
-    if (filterStatus === 'completed') return task.completed
-    if (filterStatus === 'pending') return !task.completed
-    return true
+    return task.status === filterStatus
   })
 
-  const completedCount = tasks.filter(t => t.completed).length
-  const pendingCount = tasks.filter(t => !t.completed).length
+  const completedCount = tasks.filter(t => t.status === 'completed').length
+  const pendingCount = tasks.filter(t => t.status === 'pending').length
 
   return (
     <ErrorBoundary>
-      <div className={cn("space-y-6", "container mx-auto px-4 py-8")}>
-        {/* Header */}
-        <header className="mb-8">
-          <h1 className="text-3xl font-bold text-foreground">Todo App</h1>
-          <p className="text-muted-foreground mt-2">
-            Manage your tasks efficiently
-          </p>
-        </header>
-
+      <div className={cn("space-y-6")}>
         {/* Create Task Form */}
         <TaskForm
           onSubmit={createTask}
@@ -204,7 +163,9 @@ export function TaskList() {
                   filter={filterStatus}
                   onClearFilter={clearFilter}
                   onCreateTask={() => {
-                    setFilterStatus('all')
+                    if (filterStatus === 'completed') {
+                      setFilterStatus('pending')
+                    }
                     document.querySelector('form')?.scrollIntoView({ behavior: 'smooth' })
                   }}
                 />
