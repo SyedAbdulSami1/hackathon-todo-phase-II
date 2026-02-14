@@ -1,6 +1,8 @@
 
-from db import init_db
+from sqlmodel import SQLModel
+from db import engine
 
 print("Initializing database...")
-init_db()
+SQLModel.metadata.create_all(engine)
 print("Database initialized.")
+

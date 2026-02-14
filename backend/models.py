@@ -3,9 +3,7 @@ from typing import Optional
 from sqlmodel import SQLModel, Field, create_engine
 from pydantic import BaseModel, EmailStr
 
-# Database connection
-DATABASE_URL = "postgresql://neondb_owner:your_password@ep-misty-brook-12345.us-east-2.aws.neon.tech/neondb?sslmode=require"
-engine = create_engine(DATABASE_URL)
+
 
 # Base model for database tables
 class BaseSQLModel(SQLModel):

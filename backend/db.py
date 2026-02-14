@@ -1,8 +1,13 @@
 from sqlmodel import SQLModel, create_engine, Session
 import os
 
-# Get database URL from environment variable
-DATABASE_URL = os.getenv("DATABASE_URL", "postgresql://neondb_owner:your_password@localhost/todo_db")
+from sqlmodel import SQLModel, create_engine, Session
+import os
+
+DATABASE_URL = os.getenv("DATABASE_URL")
+
+if not DATABASE_URL:
+    raise ValueError("DATABASE_URL environment variable is not set")
 
 # Create SQLModel engine
 engine = create_engine(
@@ -17,7 +22,3 @@ def get_session():
     """Dependency to get database session"""
     with Session(engine) as session:
         yield session
-
-def init_db():
-    """Initialize database tables"""
-    SQLModel.metadata.create_all(engine)
