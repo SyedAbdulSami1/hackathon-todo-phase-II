@@ -1,213 +1,237 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { TaskCard } from './task-card'
+import { TaskFilters } from './task-filters'
+import { TaskForm } from './task-form'
+import { EmptyState, NoTasksEmptyState, AllTasksCompletedEmptyState, NoFilteredTasksEmptyState } from './empty-state'
+import { LoadingSkeleton } from './loading-skeleton'
+import { ErrorBoundary } from './error-boundary'
+import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Checkbox } from '@/components/ui/checkbox'
-import { Plus, Trash2, CheckCircle2, Circle } from 'lucide-react'
-import { apiClient, Task } from '@/lib/api'
+import { Task, CreateTaskRequest } from '@/lib/api'
 import { TaskStatus } from '@/types'
+import { cn } from '@/lib/utils'
 
 export function TaskList() {
   const [tasks, setTasks] = useState<Task[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [filterStatus, setFilterStatus] = useState<TaskStatus>('all')
-  const [newTaskTitle, setNewTaskTitle] = useState('')
-  const [newTaskDescription, setNewTaskDescription] = useState('')
+  const [isCreating, setIsCreating] = useState(false)
+
+  useEffect(() => {
+    fetchTasks()
+  }, [filterStatus])
 
   const fetchTasks = async () => {
     try {
       setLoading(true)
-      const response = await apiClient.getTasks(filterStatus)
-      setTasks(response)
       setError(null)
+
+      const response = await fetch(`/api/tasks?status=${filterStatus}`)
+      if (!response.ok) {
+        throw new Error('Failed to fetch tasks')
+      }
+
+      const data = await response.json()
+      setTasks(data)
     } catch (err) {
-      setError('Failed to fetch tasks')
-      console.error(err)
+      console.error('Error fetching tasks:', err)
+      setError('Failed to fetch tasks. Please try again later.')
     } finally {
       setLoading(false)
     }
   }
 
-  useEffect(() => {
-    fetchTasks()
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [filterStatus])
-
-  const createTask = async (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!newTaskTitle.trim()) return
-
+  const createTask = async (taskData: CreateTaskRequest) => {
+    setIsCreating(true)
     try {
-      await apiClient.createTask({
-        title: newTaskTitle.trim(),
-        description: newTaskDescription.trim() || undefined,
+      const response = await fetch('/api/tasks', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(taskData),
       })
 
-      setNewTaskTitle('')
-      setNewTaskDescription('')
-      fetchTasks()
+      if (!response.ok) {
+        throw new Error('Failed to create task')
+      }
+
+      await fetchTasks() // Refresh the task list
+      setIsCreating(false)
     } catch (err) {
-      setError('Failed to create task')
-      console.error(err)
+      console.error('Error creating task:', err)
+      setIsCreating(false)
+      throw err
     }
   }
 
   const toggleTaskCompletion = async (taskId: number) => {
     try {
       const task = tasks.find(t => t.id === taskId)
-      if (task) {
-        await apiClient.updateTask(taskId, {
+      if (!task) return
+
+      const response = await fetch(`/api/tasks/${taskId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
           completed: !task.completed,
-        })
-        fetchTasks()
+        }),
+      })
+
+      if (!response.ok) {
+        throw new Error('Failed to update task')
       }
+
+      await fetchTasks() // Refresh the task list
     } catch (err) {
-      setError('Failed to update task')
-      console.error(err)
+      console.error('Error updating task:', err)
+      setError('Failed to update task. Please try again.')
     }
   }
 
   const deleteTask = async (taskId: number) => {
+    if (!confirm('Are you sure you want to delete this task?')) {
+      return
+    }
+
     try {
-      await apiClient.deleteTask(taskId)
-      fetchTasks()
+      const response = await fetch(`/api/tasks/${taskId}`, {
+        method: 'DELETE',
+      })
+
+      if (!response.ok) {
+        throw new Error('Failed to delete task')
+      }
+
+      await fetchTasks() // Refresh the task list
     } catch (err) {
-      setError('Failed to delete task')
-      console.error(err)
+      console.error('Error deleting task:', err)
+      setError('Failed to delete task. Please try again.')
     }
   }
 
-  const filteredTasks = tasks
-
-  if (loading) {
-    return <div className="text-center py-8">Loading tasks...</div>
+  const clearFilter = () => {
+    setFilterStatus('all')
   }
 
-  if (error) {
-    return <div className="text-center py-8 text-red-500">{error}</div>
-  }
+  // Filter tasks based on status
+  const filteredTasks = tasks.filter(task => {
+    if (filterStatus === 'all') return true
+    if (filterStatus === 'completed') return task.completed
+    if (filterStatus === 'pending') return !task.completed
+    return true
+  })
+
+  const completedCount = tasks.filter(t => t.completed).length
+  const pendingCount = tasks.filter(t => !t.completed).length
 
   return (
-    <div className="space-y-6">
-      {/* Create Task Form */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Add New Task</CardTitle>
-          <CardDescription>Create a new task to track your work</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={createTask} className="space-y-4">
-            <div>
-              <Input
-                placeholder="Task title (required)"
-                value={newTaskTitle}
-                onChange={(e) => setNewTaskTitle(e.target.value)}
-                required
-                maxLength={200}
-              />
-            </div>
-            <div>
-              <Input
-                placeholder="Task description (optional)"
-                value={newTaskDescription}
-                onChange={(e) => setNewTaskDescription(e.target.value)}
-                maxLength={1000}
-              />
-            </div>
-            <Button type="submit" disabled={!newTaskTitle.trim()}>
-              <Plus className="w-4 h-4 mr-2" />
-              Add Task
-            </Button>
-          </form>
-        </CardContent>
-      </Card>
+    <ErrorBoundary>
+      <div className={cn("space-y-6", "container mx-auto px-4 py-8")}>
+        {/* Header */}
+        <header className="mb-8">
+          <h1 className="text-3xl font-bold text-foreground">Todo App</h1>
+          <p className="text-muted-foreground mt-2">
+            Manage your tasks efficiently
+          </p>
+        </header>
 
-      {/* Filter Controls */}
-      <div className="flex gap-2">
-        <Button
-          variant={filterStatus === 'all' ? 'default' : 'outline'}
-          onClick={() => setFilterStatus('all')}
-          size="sm"
-        >
-          All Tasks
-        </Button>
-        <Button
-          variant={filterStatus === 'pending' ? 'default' : 'outline'}
-          onClick={() => setFilterStatus('pending')}
-          size="sm"
-        >
-          Pending
-        </Button>
-        <Button
-          variant={filterStatus === 'completed' ? 'default' : 'outline'}
-          onClick={() => setFilterStatus('completed')}
-          size="sm"
-        >
-          Completed
-        </Button>
-      </div>
+        {/* Create Task Form */}
+        <TaskForm
+          onSubmit={createTask}
+          isLoading={isCreating}
+        />
 
-      {/* Task List */}
-      {filteredTasks.length === 0 ? (
-        <Card>
-          <CardContent className="text-center py-8">
-            <p className="text-muted-foreground">No tasks found. Create your first task above!</p>
-          </CardContent>
-        </Card>
-      ) : (
+        {/* Filter Section */}
         <div className="space-y-4">
-          {filteredTasks.map((task) => (
-            <Card key={task.id} className="hover:shadow-md transition-shadow">
-              <CardContent className="p-6">
-                <div className="flex items-start justify-between">
-                  <div className="flex items-start space-x-3 flex-1">
-                    <Checkbox
-                      checked={task.completed}
-                      onCheckedChange={() => toggleTaskCompletion(task.id)}
-                    />
-                    <div className="flex-1">
-                      <h3 className={`font-medium ${task.completed ? 'line-through text-muted-foreground' : ''}`}>
-                        {task.title}
-                      </h3>
-                      {task.description && (
-                        <p className={`text-sm text-muted-foreground mt-1 ${task.completed ? 'line-through' : ''}`}>
-                          {task.description}
-                        </p>
-                      )}
-                      <p className="text-xs text-muted-foreground mt-2">
-                        Created: {new Date(task.created_at).toLocaleDateString()}
-                      </p>
-                    </div>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => toggleTaskCompletion(task.id)}
-                    >
-                      {task.completed ? (
-                        <CheckCircle2 className="w-5 h-5 text-green-500" />
-                      ) : (
-                        <Circle className="w-5 h-5 text-muted-foreground" />
-                      )}
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => deleteTask(task.id)}
-                    >
-                      <Trash2 className="w-5 h-5 text-red-500" />
-                    </Button>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
+          <div className="flex items-center justify-between">
+            <h2 className="text-lg font-semibold">Filter Tasks</h2>
+            <div className="flex items-center space-x-4 text-sm text-muted-foreground">
+              <span>Total: {tasks.length}</span>
+              {filterStatus === 'all' && (
+                <>
+                  <span>•</span>
+                  <span>Completed: {completedCount}</span>
+                  <span>•</span>
+                  <span>Pending: {pendingCount}</span>
+                </>
+              )}
+            </div>
+          </div>
+          <TaskFilters
+            currentFilter={filterStatus}
+            onFilterChange={setFilterStatus}
+          />
         </div>
-      )}
-    </div>
+
+        {/* Main Content */}
+        <div className="space-y-4">
+          {loading ? (
+            // Loading state
+            <div className="space-y-4">
+              <LoadingSkeleton.TaskForm />
+              <LoadingSkeleton.Filter />
+              {[...Array(3)].map((_, i) => (
+                <LoadingSkeleton.TaskCard key={i} />
+              ))}
+            </div>
+          ) : error ? (
+            // Error state
+            <Card className="p-6 text-center">
+              <div className="text-red-500">{error}</div>
+              <Button
+                onClick={fetchTasks}
+                className="mt-4"
+                variant="outline"
+              >
+                Retry
+              </Button>
+            </Card>
+          ) : filteredTasks.length === 0 ? (
+            // Empty states
+            <div className="space-y-4">
+              {tasks.length === 0 ? (
+                <NoTasksEmptyState
+                  onCreateTask={() => document.querySelector('form')?.scrollIntoView({ behavior: 'smooth' })}
+                />
+              ) : (
+                <NoFilteredTasksEmptyState
+                  filter={filterStatus}
+                  onClearFilter={clearFilter}
+                  onCreateTask={() => {
+                    setFilterStatus('all')
+                    document.querySelector('form')?.scrollIntoView({ behavior: 'smooth' })
+                  }}
+                />
+              )}
+            </div>
+          ) : (
+            // Task list
+            <div className="space-y-4">
+              {filterStatus === 'completed' && completedCount === tasks.length && tasks.length > 0 && (
+                <AllTasksCompletedEmptyState
+                  onCreateTask={() => setFilterStatus('pending')}
+                />
+              )}
+
+              {filteredTasks.map((task) => (
+                <TaskCard
+                  key={task.id}
+                  task={task}
+                  onToggleComplete={toggleTaskCompletion}
+                  onDelete={deleteTask}
+                  className="animate-fade-in"
+                />
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+    </ErrorBoundary>
   )
 }
