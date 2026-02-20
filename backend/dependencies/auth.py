@@ -4,7 +4,7 @@ from jose import JWTError, jwt
 from passlib.context import CryptContext
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
-from sqlmodel import Session
+from sqlmodel import Session, select
 from models import User, UserLogin, Token
 from db import get_session
 
@@ -38,13 +38,15 @@ def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
     encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
     return encoded_jwt
 
-def authenticate_user(session: Session, username: str, password: str) -> Optional[User]:
-    """Authenticate user by username and password"""
-    user = session.exec(User.username == username).first()
+def authenticate_user(session: Session, username: str, password: str) -> User:
+    """Authenticate user by username or email and password"""
+    # Check both username and email fields
+    statement = select(User).where((User.username == username) | (User.email == username))
+    user = session.exec(statement).first()
     if not user:
-        return None
+        raise HTTPException(status_code=404, detail="User not found")
     if not verify_password(password, user.hashed_password):
-        return None
+        raise HTTPException(status_code=401, detail="Incorrect password")
     return user
 
 async def get_current_user(token: str = Depends(oauth2_scheme), session: Session = Depends(get_session)):
@@ -62,7 +64,8 @@ async def get_current_user(token: str = Depends(oauth2_scheme), session: Session
     except JWTError:
         raise credentials_exception
 
-    user = session.exec(User.username == username).first()
+    statement = select(User).where(User.username == username)
+    user = session.exec(statement).first()
     if user is None:
         raise credentials_exception
     return user

@@ -74,3 +74,11 @@ export function PageSkeleton() {
     </div>
   )
 }
+
+// Export LoadingSkeleton object with sub-components to match expected usage
+export const LoadingSkeleton = {
+  TaskCard: TaskCardSkeleton,
+  TaskForm: TaskFormSkeleton,
+  Filter: FilterSkeleton,
+  Page: PageSkeleton
+}

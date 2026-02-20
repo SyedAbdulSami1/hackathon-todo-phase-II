@@ -1,10 +1,18 @@
 import { apiClient } from './api-client'
 import { User, LoginRequest, RegisterRequest } from '@/types'
 
+// Helper function to safely access localStorage
+const getLocalStorage = () => {
+  if (typeof window !== 'undefined') {
+    return window.localStorage;
+  }
+  return null;
+};
+
 export const authClient = {
   login: async (data: LoginRequest): Promise<{ user: User; token: string }> => {
-    // Backend expects username, so we send the provided username
-    const response = await apiClient.login({ username: data.username, password: data.password });
+    // Pass the whole data object; apiClient now handles URLSearchParams mapping
+    const response = await apiClient.login(data);
     return { user: response.user, token: response.token };
   },
 
@@ -15,34 +23,49 @@ export const authClient = {
   },
 
   logout: (): void => {
-    localStorage.removeItem('auth_token')
-    localStorage.removeItem('user')
+    const localStorage = getLocalStorage();
+    if (localStorage) {
+      localStorage.removeItem('auth_token');
+      localStorage.removeItem('user');
+    }
   },
 
   getCurrentUser: async (): Promise<User | null> => {
-    const token = localStorage.getItem('auth_token')
-    if (!token) return null
+    const localStorage = getLocalStorage();
+    if (!localStorage) return null;
+
+    const token = localStorage.getItem('auth_token');
+    if (!token) return null;
 
     try {
-      const response = await apiClient.getCurrentUser()
-      return response
+      const response = await apiClient.getCurrentUser();
+      return response;
     } catch {
-      return null
+      return null;
     }
   },
 
   isAuthenticated: (): boolean => {
-    return !!localStorage.getItem('auth_token')
+    const localStorage = getLocalStorage();
+    if (!localStorage) return false;
+    
+    return !!localStorage.getItem('auth_token');
   },
 
   saveAuth: (token: string, user: User): void => {
-    localStorage.setItem('auth_token', token)
-    localStorage.setItem('user', JSON.stringify(user))
+    const localStorage = getLocalStorage();
+    if (localStorage) {
+      localStorage.setItem('auth_token', token);
+      localStorage.setItem('user', JSON.stringify(user));
+    }
   },
 
   getUser: (): User | null => {
-    const userStr = localStorage.getItem('user')
-    return userStr ? JSON.parse(userStr) : null
+    const localStorage = getLocalStorage();
+    if (!localStorage) return null;
+
+    const userStr = localStorage.getItem('user');
+    return userStr ? JSON.parse(userStr) : null;
   },
 }
 

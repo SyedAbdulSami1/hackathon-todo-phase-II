@@ -20,6 +20,11 @@ class User(BaseSQLModel, table=True):
     hashed_password: str
     is_active: bool = Field(default=True)
 
+class UserRole(BaseSQLModel, table=True):
+    __tablename__ = "user_roles"
+    user_id: int = Field(foreign_key="users.id", primary_key=True)
+    role_name: str = Field(primary_key=True, max_length=50) # Assuming a simple role name
+
 class Task(BaseSQLModel, table=True):
     __tablename__ = "tasks"
 
@@ -73,3 +78,8 @@ class UserLogin(BaseModel):
 class Token(BaseModel):
     access_token: str
     token_type: str
+
+class AuthResponse(BaseModel):
+    user: UserResponse
+    token: str
+    token_type: str = "bearer"

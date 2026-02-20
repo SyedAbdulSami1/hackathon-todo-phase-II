@@ -79,10 +79,12 @@ export class ApiClient {
   private normalizeError(error: unknown): ApiError {
     if (axios.isAxiosError(error) && error.response) {
       const { status, data } = error.response
+      // FastAPI errors are usually in { "detail": "message" } format
+      const message = (data as any)?.detail || (data as any)?.error?.message || `Error ${status}`
       return {
-        message: (data as any)?.error?.message || `Error ${status}`,
+        message: typeof message === 'string' ? message : JSON.stringify(message),
         status: status,
-        details: (data as any)?.error?.details,
+        details: (data as any)?.error?.details || (data as any)?.detail,
       }
     }
 
@@ -125,7 +127,16 @@ export class ApiClient {
   // ============================================
 
   login = async (credentials: LoginRequest): Promise<AuthResponse> => {
-    return this.instance.post<ApiResponse<AuthResponse>>('/api/auth/login', credentials).then(this.handleResponse)
+    // OAuth2PasswordRequestForm expects x-www-form-urlencoded
+    const params = new URLSearchParams()
+    params.append('username', credentials.username || (credentials as any).email || '')
+    params.append('password', credentials.password)
+
+    return this.instance.post<ApiResponse<AuthResponse>>('/api/auth/login', params, {
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+    }).then(this.handleResponse)
   }
 
   register = async (userData: RegisterRequest): Promise<AuthResponse> => {

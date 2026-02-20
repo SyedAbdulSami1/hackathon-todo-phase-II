@@ -1,8 +1,9 @@
 from datetime import timedelta
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm
-from sqlmodel import Session
-from models import User, UserCreate, UserResponse, UserLogin, Token
+from sqlmodel import Session, select
+
+from models import User, UserCreate, UserResponse, UserLogin, Token, AuthResponse
 from db import get_session
 from dependencies.auth import (
     authenticate_user,
@@ -15,18 +16,19 @@ from dependencies.auth import (
 
 router = APIRouter()
 
-@router.post("/register", response_model=UserResponse)
+@router.post("/register", response_model=AuthResponse)
 def register(user: UserCreate, session: Session = Depends(get_session)):
-    """Register a new user"""
+    """Register a new user and return user with access token"""
     # Check if user already exists
-    existing_user = session.exec(
+    statement = select(User).where(
         (User.username == user.username) | (User.email == user.email)
-    ).first()
+    )
+    existing_user = session.exec(statement).first()
 
     if existing_user:
         raise HTTPException(
             status_code=400,
-            detail="Username or email already registered"
+            detail="User already registered"
         )
 
     # Create new user
@@ -40,25 +42,33 @@ def register(user: UserCreate, session: Session = Depends(get_session)):
     session.commit()
     session.refresh(db_user)
 
-    return db_user
+    # Generate token
+    access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+    token = create_access_token(
+        data={"sub": db_user.username}, expires_delta=access_token_expires
+    )
 
-@router.post("/login", response_model=Token)
+    return {
+        "user": db_user,
+        "token": token,
+        "token_type": "bearer"
+    }
+
+@router.post("/login", response_model=AuthResponse)
 def login(form_data: OAuth2PasswordRequestForm = Depends(), session: Session = Depends(get_session)):
-    """Login user and return access token"""
+    """Login user and return access token and user info"""
     user = authenticate_user(session, form_data.username, form_data.password)
-    if not user:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Incorrect username or password",
-            headers={"WWW-Authenticate": "Bearer"},
-        )
 
     access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
-    access_token = create_access_token(
+    token = create_access_token(
         data={"sub": user.username}, expires_delta=access_token_expires
     )
 
-    return {"access_token": access_token, "token_type": "bearer"}
+    return {
+        "user": user,
+        "token": token,
+        "token_type": "bearer"
+    }
 
 @router.get("/me", response_model=UserResponse)
 def read_users_me(current_user: User = Depends(get_current_active_user)):
