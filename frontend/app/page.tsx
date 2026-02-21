@@ -3,7 +3,8 @@
 import { useState, useEffect } from 'react'
 import { TaskList } from '@/components/task-list'
 import { AuthForms } from '@/components/auth-forms'
-import { authClient, User } from '@/lib/auth'
+import { authClient } from '@/lib/auth'
+import { User } from '@/types'
 import { Button } from '@/components/ui/button'
 
 export default function Home() {
