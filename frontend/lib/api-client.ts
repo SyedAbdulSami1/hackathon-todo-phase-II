@@ -107,15 +107,15 @@ export class ApiClient {
 
   getTasks = async (status?: TaskStatus): Promise<Task[]> => {
     const params = (status && status !== 'all') ? { status } : {}
-    return this.instance.get<Task[]>('/api/tasks', { params })
+    return this.instance.get<Task[]>('/api/tasks', { params }) as any as Promise<Task[]>
   }
 
   createTask = async (data: CreateTaskRequest): Promise<Task> => {
-    return this.instance.post<Task>('/api/tasks', data)
+    return this.instance.post<Task>('/api/tasks', data) as any as Promise<Task>
   }
 
   updateTask = async (id: number, data: UpdateTaskRequest): Promise<Task> => {
-    return this.instance.put<Task>(`/api/tasks/${id}`, data)
+    return this.instance.put<Task>(`/api/tasks/${id}`, data) as any as Promise<Task>
   }
 
   deleteTask = async (id: number): Promise<void> => {
@@ -136,15 +136,15 @@ export class ApiClient {
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded',
       },
-    })
+    }) as any as Promise<AuthResponse>
   }
 
   register = async (userData: RegisterRequest): Promise<AuthResponse> => {
-    return this.instance.post<AuthResponse>('/api/auth/register', userData)
+    return this.instance.post<AuthResponse>('/api/auth/register', userData) as any as Promise<AuthResponse>
   }
 
   getCurrentUser = async (): Promise<User> => {
-    return this.instance.get<User>('/api/auth/me')
+    return this.instance.get<User>('/api/auth/me') as any as Promise<User>
   }
 
   // ============================================
@@ -152,19 +152,19 @@ export class ApiClient {
   // ============================================
 
   get = async <T>(url: string, config?: AxiosRequestConfig): Promise<T> => {
-    return this.instance.get<T>(url, config)
+    return this.instance.get<T>(url, config) as any as Promise<T>
   }
 
   post = async <T>(url: string, data?: any, config?: AxiosRequestConfig): Promise<T> => {
-    return this.instance.post<T>(url, data, config)
+    return this.instance.post<T>(url, data, config) as any as Promise<T>
   }
 
   put = async <T>(url: string, data?: any, config?: AxiosRequestConfig): Promise<T> => {
-    return this.instance.put<T>(url, data, config)
+    return this.instance.put<T>(url, data, config) as any as Promise<T>
   }
 
   delete = async <T>(url: string, config?: AxiosRequestConfig): Promise<T> => {
-    return this.instance.delete<T>(url, config)
+    return this.instance.delete<T>(url, config) as any as Promise<T>
   }
 }
 
