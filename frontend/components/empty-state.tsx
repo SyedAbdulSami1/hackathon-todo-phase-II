@@ -13,6 +13,11 @@ interface EmptyStateProps {
     onClick: () => void
     variant?: 'default' | 'outline'
   }
+  actions?: Array<{
+    label: string
+    onClick: () => void
+    variant?: 'default' | 'outline'
+  }>
   className?: string
 }
 
@@ -21,6 +26,7 @@ export function EmptyState({
   description,
   icon,
   action,
+  actions,
   className
 }: EmptyStateProps) {
   const defaultIcon = (
@@ -28,6 +34,8 @@ export function EmptyState({
       <CheckCircle className="w-8 h-8 text-blue-600" />
     </div>
   )
+
+  const allActions = actions || (action ? [action] : [])
 
   return (
     <Card className={cn("text-center py-12", className)}>
@@ -48,20 +56,25 @@ export function EmptyState({
             )}
           </div>
 
-          {action && (
-            <Button
-              onClick={action.onClick}
-              variant={action.variant || 'default'}
-              className="mt-4 transition-all duration-200 hover:scale-105"
-            >
-              {action.label}
-              {action.label.includes('Create') && (
-                <Plus className="w-4 h-4 ml-2" />
-              )}
-              {action.label.includes('Get') && (
-                <ArrowRight className="w-4 h-4 ml-2" />
-              )}
-            </Button>
+          {allActions.length > 0 && (
+            <div className="flex flex-wrap items-center justify-center gap-4 mt-4">
+              {allActions.map((act, index) => (
+                <Button
+                  key={index}
+                  onClick={act.onClick}
+                  variant={act.variant || 'default'}
+                  className="transition-all duration-200 hover:scale-105"
+                >
+                  {act.label}
+                  {act.label.includes('Create') && (
+                    <Plus className="w-4 h-4 ml-2" />
+                  )}
+                  {act.label.includes('Get') && (
+                    <ArrowRight className="w-4 h-4 ml-2" />
+                  )}
+                </Button>
+              ))}
+            </div>
           )}
         </div>
       </CardContent>
