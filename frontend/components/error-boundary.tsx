@@ -66,7 +66,7 @@ export function ErrorBoundary({ children, fallback }: ErrorBoundaryProps) {
                   Oops! Something went wrong
                 </h2>
                 <p className="text-muted-foreground">
-                  We're sorry, but an unexpected error has occurred.
+                  We&apos;re sorry, but an unexpected error has occurred.
                 </p>
               </div>
 

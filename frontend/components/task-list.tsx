@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { TaskCard } from './task-card'
 import { TaskFilters } from './task-filters'
 import { TaskForm } from './task-form'
@@ -21,11 +21,7 @@ export function TaskList() {
   const [filterStatus, setFilterStatus] = useState<TaskStatus>('all')
   const [isCreating, setIsCreating] = useState(false)
 
-  useEffect(() => {
-    fetchTasks()
-  }, [filterStatus])
-
-  const fetchTasks = async () => {
+  const fetchTasks = useCallback(async () => {
     try {
       setLoading(true)
       setError(null)
@@ -37,7 +33,11 @@ export function TaskList() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [filterStatus])
+
+  useEffect(() => {
+    fetchTasks()
+  }, [fetchTasks])
 
   const createTask = async (taskData: CreateTaskRequest) => {
     setIsCreating(true)
