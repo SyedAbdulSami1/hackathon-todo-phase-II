@@ -27,6 +27,8 @@ export function TaskCard({
   onDelete,
   className
 }: TaskCardProps) {
+  const isCompleted = task.status === 'completed'
+
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'completed':
@@ -49,8 +51,8 @@ export function TaskCard({
   return (
     <Card
       className={cn(
-        "hover:shadow-md transition-all duration-200",
-        task.completed && "opacity-75",
+        "hover:shadow-md transition-all duration-200 border-l-4",
+        isCompleted ? "opacity-70 border-l-green-500 bg-muted/30" : "border-l-blue-500",
         className
       )}
       role="article"
@@ -60,15 +62,15 @@ export function TaskCard({
         <div className="flex items-start justify-between">
           <div className="flex items-start space-x-3 flex-1">
             <Checkbox
-              checked={task.completed}
+              checked={isCompleted}
               onCheckedChange={() => onToggleComplete(task.id)}
-              aria-label={task.completed ? "Mark as incomplete" : "Mark as complete"}
+              aria-label={isCompleted ? "Mark as incomplete" : "Mark as complete"}
             />
             <div className="flex-1 min-w-0">
               <h3
                 className={cn(
                   "font-medium text-lg mb-1",
-                  task.completed && "line-through text-muted-foreground"
+                  isCompleted && "line-through text-muted-foreground"
                 )}
               >
                 {task.title}
@@ -77,7 +79,7 @@ export function TaskCard({
                 <p
                   className={cn(
                     "text-sm text-muted-foreground mb-2",
-                    task.completed && "line-through"
+                    isCompleted && "text-muted-foreground/60"
                   )}
                 >
                   {task.description}
@@ -106,10 +108,10 @@ export function TaskCard({
               variant="ghost"
               size="icon"
               onClick={() => onToggleComplete(task.id)}
-              aria-label={task.completed ? "Mark as incomplete" : "Mark as complete"}
-              className="hover:bg-green-100"
+              aria-label={isCompleted ? "Mark as incomplete" : "Mark as complete"}
+              className={cn("hover:bg-green-100", isCompleted && "text-green-600")}
             >
-              {getStatusIcon(task.completed)}
+              {getStatusIcon(isCompleted)}
             </Button>
             <Button
               variant="ghost"

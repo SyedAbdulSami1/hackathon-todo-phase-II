@@ -106,20 +106,20 @@ export class ApiClient {
   // ============================================
 
   getTasks = async (status?: TaskStatus): Promise<Task[]> => {
-    const params = status ? { status } : {}
-    return this.instance.get<ApiResponse<Task[]>>('/api/tasks', { params }).then(this.handleResponse)
+    const params = (status && status !== 'all') ? { status } : {}
+    return this.instance.get<Task[]>('/api/tasks', { params })
   }
 
   createTask = async (data: CreateTaskRequest): Promise<Task> => {
-    return this.instance.post<ApiResponse<Task>>('/api/tasks', data).then(this.handleResponse)
+    return this.instance.post<Task>('/api/tasks', data)
   }
 
   updateTask = async (id: number, data: UpdateTaskRequest): Promise<Task> => {
-    return this.instance.put<ApiResponse<Task>>(`/api/tasks/${id}`, data).then(this.handleResponse)
+    return this.instance.put<Task>(`/api/tasks/${id}`, data)
   }
 
   deleteTask = async (id: number): Promise<void> => {
-    await this.instance.delete<ApiResponse<void>>(`/api/tasks/${id}`)
+    await this.instance.delete(`/api/tasks/${id}`)
   }
 
   // ============================================
@@ -132,19 +132,19 @@ export class ApiClient {
     params.append('username', credentials.username || (credentials as any).email || '')
     params.append('password', credentials.password)
 
-    return this.instance.post<ApiResponse<AuthResponse>>('/api/auth/login', params, {
+    return this.instance.post<AuthResponse>('/api/auth/login', params, {
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded',
       },
-    }).then(this.handleResponse)
+    })
   }
 
   register = async (userData: RegisterRequest): Promise<AuthResponse> => {
-    return this.instance.post<ApiResponse<AuthResponse>>('/api/auth/register', userData).then(this.handleResponse)
+    return this.instance.post<AuthResponse>('/api/auth/register', userData)
   }
 
   getCurrentUser = async (): Promise<User> => {
-    return this.instance.get<ApiResponse<User>>('/api/auth/me').then(this.handleResponse)
+    return this.instance.get<User>('/api/auth/me')
   }
 
   // ============================================
@@ -152,19 +152,19 @@ export class ApiClient {
   // ============================================
 
   get = async <T>(url: string, config?: AxiosRequestConfig): Promise<T> => {
-    return this.instance.get<ApiResponse<T>>(url, config).then(this.handleResponse)
+    return this.instance.get<T>(url, config)
   }
 
   post = async <T>(url: string, data?: any, config?: AxiosRequestConfig): Promise<T> => {
-    return this.instance.post<ApiResponse<T>>(url, data, config).then(this.handleResponse)
+    return this.instance.post<T>(url, data, config)
   }
 
   put = async <T>(url: string, data?: any, config?: AxiosRequestConfig): Promise<T> => {
-    return this.instance.put<ApiResponse<T>>(url, data, config).then(this.handleResponse)
+    return this.instance.put<T>(url, data, config)
   }
 
   delete = async <T>(url: string, config?: AxiosRequestConfig): Promise<T> => {
-    return this.instance.delete<ApiResponse<T>>(url, config).then(this.handleResponse)
+    return this.instance.delete<T>(url, config)
   }
 }
 

@@ -174,7 +174,7 @@ export function TaskList() {
           ) : (
             // Task list
             <div className="space-y-4">
-              {filterStatus === 'completed' && completedCount === tasks.length && tasks.length > 0 && (
+              {filterStatus !== 'completed' && completedCount === tasks.length && tasks.length > 0 && (
                 <AllTasksCompletedEmptyState
                   onCreateTask={() => setFilterStatus('pending')}
                 />

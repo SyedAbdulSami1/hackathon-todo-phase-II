@@ -35,7 +35,7 @@ export default function Home() {
       <header className="mb-8 flex justify-between items-center">
         <div>
           <h1 className="text-3xl font-bold text-foreground">Todo App</h1>
-          {user && <p className="text-muted-foreground mt-2">Welcome, {user.name}!</p>}
+          {user && <p className="text-muted-foreground mt-2">Welcome, {user.username}!</p>}
         </div>
         <Button onClick={handleLogout} variant="outline">
           Logout
