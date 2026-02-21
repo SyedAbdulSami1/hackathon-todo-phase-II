@@ -10,8 +10,7 @@ import {
   Calendar,
   Clock
 } from 'lucide-react'
-import { Task } from '@/lib/api'
-import { TaskStatus } from '@/types'
+import { Task, TaskStatus } from '@/types'
 import { cn } from '@/lib/utils'
 
 interface TaskCardProps {
